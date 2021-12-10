@@ -1,0 +1,150 @@
+#!/usr/bin/python3
+
+# PMTOOL (pmt)
+#
+# @ Copyright Intel 2021
+# Released under NDA to Walgreens for use with Optane Persistent Memory
+# All rights reserved
+# Provided as Sample Code with no warranty
+# December 06, 2021
+# Version: 0.71
+
+
+import ndctl as n
+import fstab as f
+
+import sys
+import os
+import argparse
+
+global verbose
+global debug
+
+verbose = 0
+debug = 0
+
+# Dicts used
+ndctl = {}
+fstab = {}
+
+# Lists used
+regionList = []
+dimmList = []
+nsList = []
+nsDeviceList = []
+nsNameList = []
+
+
+def main(argv):
+    # process command line arguments
+
+    delimiter = '; '
+    fsSuffix = ''
+
+    ap = argparse.ArgumentParser()
+
+    ap.add_argument("--delimiter", required=False, help="Delimiter for pmfs mount path. Default:';'")
+    ap.add_argument("--suffix", required=False, help="string to append to pmfs mount path Default:''")
+
+    args = vars(ap.parse_args())
+
+    if args['delimiter']:  delimiter = args['delimiter']
+    if args['suffix']:     fsSuffix = args['suffix']
+
+    # dump NDCTL Data
+    n.dump()
+
+    # parse NDCTL Data
+    ndctl = n.parse()
+
+    # parse FSTAB PMEM entries
+    fstab = f.parse()
+
+    # get list of all pmem dimms in system
+    dimmList = n.getDimmList()
+    dimmList.sort()
+
+    # merge key data from NDCTL into FSTAB structures
+    #
+    # update fstab status from DIMM Status
+    # for each dimm:
+    for dimm in dimmList:
+        status  = n.getDimmStatus(dimm)
+
+        # get the list of namespace devices (pmemX) for this DIMM
+        nsDevList = n.getNsDeviceListByDimm(dimm)
+
+        # since DIMM status affects region status, which affects namespaces
+        # on that region, we can use that status to infer the health of the namespace
+        #
+        # for each namespace device, update fs status with DIMM status
+        for dev in nsDevList:
+            f.setFsStatus(fstab, dev, status)
+
+        # look up the region that DIMM is part of, and add it to the fstab structure
+        region  = n.getRegionByDimm(dimm)
+        f.setFsRegion(fstab, dev, region)
+
+        # look up all the DIMM's associated with this region
+        # region DIMM List
+        rList = n.getRegionDimmList(region)
+        dimms = ' '.join(rList)
+        f.setFsDimms(fstab, dev, dimms)
+
+    # Reporting Section
+
+    # Current View looks like this:
+    #
+    # Optane Persistent Memory DIMM Status
+    #
+    # Linux    DIMM   DIMM   Cntrl  Remaining
+    # Device   Health Temp   Temp   Life
+    # ------   ------ ------ ------ ----
+    # nmem1    ok     33.0   33.0   100
+    # nmem3    ok     34.0   35.0   100
+    # nmem5    ok     32.0   34.0   100
+    # nmem10   ok     32.0   36.0   100
+    # nmem7    ok     34.0   34.0   100
+    # nmem9    ok     34.0   34.0   100
+    # nmem0    ok     34.0   34.0   100
+    # nmem2    ok     32.0   34.0   100
+    # nmem4    ok     34.0   36.0   100
+    # nmem6    ok     33.0   36.0   100
+    # nmem11   ok     31.0   34.0   100
+    # nmem8    ok     33.0   34.0   100
+
+    print()
+    print("Optane Persistent Memory DIMM Status")
+    print()
+    n.listDimmTable()
+
+
+    # printFstabTable() Current View looks like this:
+    #
+    # Health Region   NS dev     NS Type  fs_type  mount                               dimms
+    # ------ -------  ------     ------   ------   -------------------- --------------------
+    # ok     region0  pmem0      fsdaX    xfs      /pmemfs0             nmem5 nmem4 nmem3 nmem2 nmem1 nmem0
+    # ok     region1  pmem1      fsdaX    xfs      /pmemfs1             nmem11 nmem10 nmem9 nmem8 nmem7 nmem6
+    #
+    print()
+    f.printFstabTable(fstab)
+    print()
+
+    # printFsMounts() Current View looks like this:
+    #
+    # PMFS with OK status: /pmemfs0/sap; /pmemfs1/sap;
+    #
+    # suffix = string to append to end of fs mount point from fstab
+    #   default: suffix == '' (none)
+    #
+    # delimiter = string to use to delimit list of mount points
+    #
+    #   default: delimiter == ';' (semicolon)
+    #
+    suffix = fsSuffix + delimiter
+    print()
+    print("PMFS with OK status: ", end='')
+    f.printFsMounts(fstab,'ok', suffix)
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

@@ -1,0 +1,103 @@
+#!/usr/bin/python3
+
+import os
+
+sandbox = "./sandbox"
+
+dirList = [ \
+        "bin", \
+        "dev", \
+        "dev/disk", \
+        "dev/disk/by-uuid", \
+        "dev/disk/by-id", \
+        "etc", \
+        "tmp" ]
+
+nDimms = 16
+pmemList = []
+
+print("Creating Sandbox:", sandbox)
+os.mkdir(sandbox)
+
+print("Line B1" , os.getcwd())
+print("Creating directory tree")
+for d in dirList:
+    p = os.path.join(sandbox, d)
+    os.mkdir(p)
+    print("Directory '% s' created" % p)
+
+print("Creating PMEM Block Devices")
+for d in range(16):
+    blockDev = "pmem" + str(d)
+    pmemList.append(blockDev)
+    blockDevPath = "./sandbox/dev/" + blockDev
+
+    mntPt = "./sandbox/" + blockDev
+    os.mkdir(mntPt)
+
+# this one is 1 digit short, and will be appended by 00-0f
+UUID = "5038fb23-6374-4d03-81b9-93d6c984eb"
+
+print("Line B2" , os.getcwd())
+print("Creating dev/disk/by-uuid links")
+i = 0
+os.chdir("sandbox/dev/disk/by-uuid")
+for d in pmemList:
+    src = "../../" + d
+    dst = UUID + hex(i)
+    print("Creating link ", src, "->", dst)
+    os.symlink(src, dst)
+    i = i +1
+
+print("Line B3" , os.getcwd())
+os.chdir("../../../etc")
+print("Line B4" , os.getcwd())
+
+path = "fstab.UUID"
+f = open(path, "x")
+print("Creating fstab with UUID= format", path)
+i = 0
+for d in pmemList:
+    dst = UUID + hex(i)
+    mntPt = "/pmem" + str(i)
+
+    blkDev = 'UUID="' + dst + '"'
+    line = ("%s %s %s %s %s %s\n") % (blkDev, mntPt, "xfs", "dax", "0", "0")
+
+    f.write(line)
+
+    i = i +1
+f.close()
+
+path = "fstab.by-uuid"
+f = open(path, "x")
+print("Creating fstab with /dev/disk/by-uuid format", path)
+i = 0
+for d in pmemList:
+    dst = UUID + hex(i)
+    mntPt = "/pmem" + str(i)
+
+    blkDev = '/dev/disk/by-uuid' + dst
+    line = ("%s %s %s %s %s %s\n") % (blkDev, mntPt, "xfs", "dax", "0", "0")
+
+    f.write(line)
+
+    i = i +1
+f.close()
+
+path = "fstab.dev"
+f = open(path, "x")
+print("Creating fstab using /dev/pmemX format", path)
+i = 0
+for d in pmemList:
+    dst = UUID + hex(i)
+    mntPt = "/pmem" + str(i)
+
+    blkDev = '/dev/' + d
+    line = ("%s %s %s %s %s %s\n") % (blkDev, mntPt, "xfs", "dax", "0", "0")
+    f.write(line)
+
+    i = i +1
+
+f.close()
+

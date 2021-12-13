@@ -5,19 +5,56 @@
 # Released under NDA to Walgreens for use with Optane Persistent Memory
 # All rights reserved
 # Provided as Sample Code with no warranty
-# December 06, 2021
-# Version: 0.71
+# December 03, 2021
+# Version: 0.7
 
 import os
 
 verbose = 0
 debug = 0
 
+# fs uuid path: /dev/disk/by-uuid/367d56f1-c47f-47f0-8350-1e3d543eebfd
+#      fs uuid: UUID="367d56f1-c47f-47f0-8350-1e3d543eebfd"
+
+# Input: UUID="eb0caaa8-8191-490d-b955-f3a73ed6fe26"
+# Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
+def fsUUIDToPath(uuid):
+    path = "/dev/disk/by-uuid/"
+
+    # strip chars from input
+    tmp1 = uuid.replace('"', '')
+    tmp2 = tmp1.replace('UUID=', '')
+    # append to path
+
+    path = "/dev/disk/by-uuid/" + tmp2
+
+    return path
+
+#  input: blockdev path: /dev/pmem0
+#  output: blockdev: pmem0
+def blockDevPathToBlockDev(path):
+    blockDev = path.replace('/dev/','')
+    return blockDev
+
+def fsUUIDPathToBlockDev(path):
+    blockDev = "pmemX"
+
+    # if dev is a link, get actual device from link
+    if os.path.islink(path):
+        target = os.readlink(path)
+
+    #strip the preceeding relative path
+    # cheating a bit cuz I know the real path
+    blockDev = path.replace('../../','')
+
+    return blockDev
+
 # dict: fstab
 # parses fstab for pmem entrys and populates fstab dict
 # retrns populated fstab
 def parse(fstabFile = '/etc/fstab'):
     fstab = {}
+    blockDev = ''
 
     m  = {} # tmp dict for fstab pmem mount data
 
@@ -41,17 +78,30 @@ def parse(fstabFile = '/etc/fstab'):
             fs_type = ' '.join(line[2:3])
             fs_opts = ' '.join(line[3:4])
 
-            # if dev is a link, get actual device from link
-            if os.path.islink(dev):
-                target = os.readlink(dev)
+            if debug: print("DEBUG DEV:", dev)
 
-                #strip the preceeding relative path
-                # cheating a bit cuz I know the real path
-                short_dev = target.replace('../../','')
+            # three possible formats for the dev
+            # - - - - - - - - - - - - - - - - - - - - -
+            #      fs uuid: UUID="367d56f1-c47f-47f0-8350-1e3d543eebfd"
+            if dev.startswith("UUID="):
+                print('startswith("UUID=")')
+                path = fsUUIDToPath(dev)
+                blockDev = fsUUIDPathToBlockDev(path)
+
+            # fs uuid path: /dev/disk/by-uuid/367d56f1-c47f-47f0-8350-1e3d543eebfd
+            if dev.startswith("/dev/disk/by-uuid"):
+                blockDev = fsUUIDPathToBlockDev(dev)
+
+            #  blockdev path: /dev/pmem0
+            if dev.startswith("/dev/pmem"):
+                blockDev = blockDevPathToBlockDev(dev)
+
+
+            print('parse: blockDev:', blockDev)
 
             # populate fstab dict with metadata for the dev listed in fstab
-            if short_dev.startswith("pmem"):
-                fstab[short_dev] = { \
+            if blockDev.startswith("pmem"):
+                fstab[blockDev] = { \
                         'status': 'unknown', \
                         'mount': mnt, \
                         'fs_guid': dev, \
@@ -108,7 +158,7 @@ def printFsMounts(fstab, status='ok', delimiter=';'):
     print()
 
 def setFsStatus(fstab, dev, status='ok'):
-    # print("setFsStatus: dev:", dev, " status:", status)
+    #print("setFsStatus: dev:", dev, " status:", status)
     fstab[dev]['status'] = status
 
 def setFsRegion(fstab, dev, region):
@@ -129,15 +179,24 @@ def module_test():
 
     fstab = {}
     fstabFile = "/etc/fstab"
+    # fstabFile = "fstab"
 
-    fstab = parseFstab(fstabFile)
+    fstab = parse(fstabFile)
 
-    status = 'ok'
-    dev = '/dev/disk/by-uuid/4174d9c4-4d31-46f8-9116-20408e1a4465'  # pmem0
-    setFsStatus(fstab, dev, status)
+    print(fstab)
 
-    dev = '/dev/disk/by-uuid/823973eb-8f85-40ce-a670-e8481df3de17'  # pmem1
-    setFsStatus(fstab, dev, status)
+    setFsStatus(fstab, dev, status='ok')
+    setFsRegion(fstab, dev, region)
+    setFsDimms(fstab, dev, dimms)
+
+    # status = 'ok'
+    # dev = '/dev/disk/by-uuid/4174d9c4-4d31-46f8-9116-20408e1a4465'  # pmem0
+    # setFsStatus(fstab, dev, status)
+
+    # dev = '/dev/disk/by-uuid/823973eb-8f85-40ce-a670-e8481df3de17'  # pmem1
+    # setFsStatus(fstab, dev, status)
+
+    printFstabTable(fstab)
 
     print("PMFS with OK status: ", end='')
     printFsMounts(fstab)

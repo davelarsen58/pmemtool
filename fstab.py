@@ -1,67 +1,155 @@
 #!/usr/bin/python3
 #
 # PMEMTOOL (PMT) FSTAB Module
-# @ Copyright Intel 2021
-# Released under NDA to Walgreens for use with Optane Persistent Memory
-# All rights reserved
-# Provided as Sample Code with no warranty
-# December 03, 2021
-# Version: 0.7
+# Copyright (C) David P Larsen
+# Released under MIT License
 
 import os
+import sys
 
-verbose = 0
-debug = 0
+VERBOSE = 0
+DEBUG = 0
 
-# fs uuid path: /dev/disk/by-uuid/367d56f1-c47f-47f0-8350-1e3d543eebfd
-#      fs uuid: UUID="367d56f1-c47f-47f0-8350-1e3d543eebfd"
+# If working in a test sandbox, change paths
+# to start with path to sandbox
+#
+if not os.getenv('SANDBOX'):
+    SANDBOX = ''
+else:
+    SANDBOX = os.environ['SANDBOX']
+    print('Enabling Sandbox at:', SANDBOX)
 
-# Input: UUID="eb0caaa8-8191-490d-b955-f3a73ed6fe26"
-# Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
-def fsUUIDToPath(uuid):
-    path = "/dev/disk/by-uuid/"
+FSTAB = SANDBOX + '/etc/fstab'
+DEVDIR = SANDBOX + '/dev'
+DEV_UUID = DEVDIR + '/disk/by-uuid/'
 
-    # strip chars from input
-    tmp1 = uuid.replace('"', '')
-    tmp2 = tmp1.replace('UUID=', '')
-    # append to path
+print("FSTAB", FSTAB)
+print("DEVDIR", DEVDIR)
+print("DEV_UUID", DEV_UUID)
 
-    path = "/dev/disk/by-uuid/" + tmp2
+def unit_test_result(name, status):
+    print("%-30s %-10s" % (name, status))
+
+def fs_uuid_to_path(uuid):
+    """
+        Converts fstab UUID= entry to absolute path
+         Input: UUID='eb0caaa8-8191-490d-b955-f3a73ed6fe26'
+        Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
+    """
+    path = DEV_UUID
+
+    # strip 'UUID="..."'chars from input
+    tmp1 = uuid.replace('"', '')     # replace teh quotes
+    tmp2 = tmp1.replace('UUID=', '') # remove UUID=
+
+    # append UUID to path
+    path = path + tmp2
 
     return path
 
-#  input: blockdev path: /dev/pmem0
-#  output: blockdev: pmem0
-def blockDevPathToBlockDev(path):
-    blockDev = path.replace('/dev/','')
-    return blockDev
+def test_fs_uuid_to_path():
+    """
+        unit test for function
+        depends on setting sandbox test env using mksandbox script
+    """
+    path = ''
+    status = 'new'
+    uuid = 'UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x0"'
+    real_path = DEV_UUID + '5038fb23-6374-4d03-81b9-93d6c984eb0x0'
+    path = fs_uuid_to_path(uuid)
 
-def fsUUIDPathToBlockDev(path):
-    blockDev = "pmemX"
+    if path == real_path:
+        status = 'Pass'
+    else:
+        status = 'Fail'
+    unit_test_result('fs_uuid_to_path()', status)
+
+    return status
+
+def block_dev_path_to_block_dev(path):
+    """
+        converts block device path (/dev/pmemX)
+        to the device name (pmemX)
+    """
+    block_dev = os.path.basename(path)
+    return block_dev
+
+def test_block_dev_path_to_block_dev():
+    """
+        leverages sandbox static configuration and values
+        unit test for block_dev_path_to_block_dev()
+    """
+    dev = 'pmem0'
+    status = 'new'
+    real_path = DEVDIR + '/pmem0'
+
+    block_dev = block_dev_path_to_block_dev(real_path)
+
+    if dev == block_dev:
+        status = 'Pass'
+    else:
+        status = 'Fail'
+        print('Details:', dev, block_dev)
+    unit_test_result('block_dev_path_to_block_dev()', status)
+
+    return status
+
+
+def fs_uuid_path_to_block_dev(path):
+    """get the link to actual device from FS uuid
+        path: /dev/disk/by-uuid/UUID
+        return: pmemX
+    """
+    block_dev = "pmemX"
+    target = ''
 
     # if dev is a link, get actual device from link
     if os.path.islink(path):
         target = os.readlink(path)
 
+    print("fs_uuid_path_to_block_dev:", path, target)
     #strip the preceeding relative path
     # cheating a bit cuz I know the real path
-    blockDev = path.replace('../../','')
+    # block_dev = path.replace('../../','')
+    block_dev = os.path.basename(target)
 
-    return blockDev
+    return block_dev
 
-# dict: fstab
-# parses fstab for pmem entrys and populates fstab dict
-# retrns populated fstab
-def parse(fstabFile = '/etc/fstab'):
+def test_fs_uuid_path_to_block_dev():
+    """
+        leverages sandbox static configuration and values
+    """
+    dev = "pmem0"
+    real_path = DEV_UUID + '5038fb23-6374-4d03-81b9-93d6c984eb0x0'
+
+    if os.path.islink(real_path):
+        target = os.readlink(real_path)
+
+    block_dev = os.path.basename(target)
+
+    if dev == block_dev:
+        status = 'Pass'
+    else:
+        status = 'Fail'
+        print('Details:', dev, block_dev)
+    unit_test_result('fs_uuid_path_to_block_dev()', status)
+
+    return status
+
+
+def parse_fstab(file_name=FSTAB):
+    """
+        parses fstab into a dict, and returned to the caller
+    """
     fstab = {}
-    blockDev = ''
+    block_dev = ''
 
-    m  = {} # tmp dict for fstab pmem mount data
+    # DEBUG = 1
 
-    if debug: print("DEBUG: Function:", parseFstab.__name__, "File:", fstabFile )
-    if verbose: print('  Parsing fstab:', fstabFile, end="...")
+    if DEBUG: print("DEBUG: Function:", __name__, "File:", file_name)
+    if VERBOSE: print('  Parsing fstab:', file_name, end="...")
 
-    with open(fstabFile,"r") as f:
+    with open(file_name, "r") as f:
         for line in f:
             stripped_line = line.strip()
 
@@ -78,49 +166,51 @@ def parse(fstabFile = '/etc/fstab'):
             fs_type = ' '.join(line[2:3])
             fs_opts = ' '.join(line[3:4])
 
-            if debug: print("DEBUG DEV:", dev)
+            if DEBUG: print("DEBUG DEV:", dev)
 
             # three possible formats for the dev
             # - - - - - - - - - - - - - - - - - - - - -
             #      fs uuid: UUID="367d56f1-c47f-47f0-8350-1e3d543eebfd"
             if dev.startswith("UUID="):
-                print('startswith("UUID=")')
-                path = fsUUIDToPath(dev)
-                blockDev = fsUUIDPathToBlockDev(path)
+                if DEBUG: print('startswith("UUID=")')
+                uuid_path = fs_uuid_to_path(dev)
+                block_dev = fs_uuid_path_to_block_dev(uuid_path)
 
             # fs uuid path: /dev/disk/by-uuid/367d56f1-c47f-47f0-8350-1e3d543eebfd
             if dev.startswith("/dev/disk/by-uuid"):
-                blockDev = fsUUIDPathToBlockDev(dev)
+                if DEBUG: print('startswith("/dev/disk/by-uuid")')
+                dev_path = SANDBOX + dev
+                block_dev = fs_uuid_path_to_block_dev(dev_path)
 
             #  blockdev path: /dev/pmem0
             if dev.startswith("/dev/pmem"):
-                blockDev = blockDevPathToBlockDev(dev)
+                if DEBUG: print('startswith("/dev/pmem)')
+                block_dev = block_dev_path_to_block_dev(dev)
 
-
-            print('parse: blockDev:', blockDev)
+            if DEBUG: print('parse: block_dev:', dev, block_dev)
 
             # populate fstab dict with metadata for the dev listed in fstab
-            if blockDev.startswith("pmem"):
-                fstab[blockDev] = { \
-                        'status': 'unknown', \
+            if block_dev.startswith("pmem"):
+                fstab[block_dev] = { \
+                        'status': 'ok', \
                         'mount': mnt, \
                         'fs_guid': dev, \
                         'fs_type': fs_type, \
                         'fs_opts': fs_opts, \
                         'pm_region': 'regionX', \
                         'pm_ns_name': 'namespaceX.Y', \
-                        'pm_ns_dev': short_dev, \
+                        'pm_ns_dev': block_dev, \
                         'pm_ns_type': 'fsdaX', \
                         'dimms': 'dimms' \
-                        }
+                      }
 
-    if verbose: print('Done')
-    if debug: print("FSTAB")
-    if debug: print(fstab)
+    if VERBOSE: print('Done')
+    if DEBUG: print("FSTAB")
+    if DEBUG: print(fstab)
 
     return fstab
 
-def printFstabTable(fstab):
+def print_fstab_table(fstab):
 
     print("%-6s %-8s %-10s %-8s %-8s %-20s %20s" % ( \
             'Health', \
@@ -129,19 +219,19 @@ def printFstabTable(fstab):
             'NS Type', \
             'fs_type', \
             'mount', \
-            'dimms') )
+            'dimms'))
 
     print("%-6s %-8s %-10s %-8s %-8s %-20s %20s" % (\
-            '------', 
-            '-------', 
-            '------', 
-            '------', 
-            '------', 
-            '--------------------', 
-            '--------------------' \
+            '------',
+            '-------',
+            '------',
+            '------',
+            '------',
+            '--------------------',
+            '--------------------'\
             ))
     for k in fstab.keys():
-       print("%-6s %-8s %-10s %-8s %-8s %-20s %-20s" % ( \
+        print("%-6s %-8s %-10s %-8s %-8s %-20s %-20s" % ( \
                fstab[k]['status'], \
                fstab[k]['pm_region'], \
                fstab[k]['pm_ns_dev'], \
@@ -151,60 +241,101 @@ def printFstabTable(fstab):
                fstab[k]['dimms'] \
                ))
 
-def printFsMounts(fstab, status='ok', delimiter=';'):
+def print_fs_mounts(fstab, status='ok', delimiter=';'):
+    """
+    """
     for k in fstab.keys():
         if fstab[k]['status'] == status:
             print(fstab[k]['mount'], end=delimiter)
     print()
 
-def setFsStatus(fstab, dev, status='ok'):
-    #print("setFsStatus: dev:", dev, " status:", status)
+def set_fs_status(fstab, dev, status='ok'):
+    #print("set_fs_status: dev:", dev, " status:", status)
     fstab[dev]['status'] = status
 
-def setFsRegion(fstab, dev, region):
-    # print("setFsStatus: dev:", dev, " status:", status)
+def test_set_fs_status():
+    status = 'Skipped'
+
+    unit_test_result('test_set_fs_status()', status)
+    return status
+
+def set_fs_region(fstab, dev, region):
+    # print("set_fs_status: dev:", dev, " status:", status)
     fstab[dev]['pm_region'] = region
 
-def setFsDimms(fstab, dev, dimms):
-    # print("setFsStatus: dev:", dev, " status:", status)
+def test_set_fs_region():
+    status = 'Skipped'
+
+    unit_test_result('test_set_fs_region()', status)
+    return status
+
+def set_fs_dimms(fstab, dev, dimms):
+    # print("set_fs_status: dev:", dev, " status:", status)
     fstab[dev]['dimms'] = dimms
 
+def test_set_fs_dimms():
+    status = 'Skipped'
 
-def module_test():
-    import sys
-    import os
+    unit_test_result('test_set_fs_dimms()', status)
+    return status
 
-    global verbose
-    global debug
+
+def unitTests():
+    # Module Unit Tests
+    # # Unit Test counters
+    utCounters = {'Attempted': 0, 'Pass': 0, 'Fail': 0, 'Skipped': 0}
+
+    print("Unit Tests")
+    print("%-30s %-10s" % ('Function Name', 'status'))
+    print("%-30s %-10s" % ('------------------------------', '----------'))
+
+    utCounters['Attempted'] += 1
+    test_status = test_fs_uuid_to_path()
+    utCounters[test_status] += 1
+
+    utCounters['Attempted'] += 1
+    test_status = test_block_dev_path_to_block_dev()
+    utCounters[test_status] += 1
+
+    utCounters['Attempted'] += 1
+    test_status = test_fs_uuid_path_to_block_dev()
+    utCounters[test_status] += 1
+
+    utCounters['Attempted'] += 1
+    test_status = test_set_fs_status()
+    utCounters[test_status] += 1
+
+    utCounters['Attempted'] += 1
+    test_status = test_set_fs_region()
+    utCounters[test_status] += 1
+
+    utCounters['Attempted'] += 1
+    test_status = test_set_fs_dimms()
+    utCounters[test_status] += 1
+
+    passed = utCounters['Pass']
+    failed = utCounters['Fail']
+    skipped = utCounters['Skipped']
+    attempted = utCounters['Attempted']
+
+    print("\nSummary\n")
+    print("%-9s %-4s %-4s %-4s" % ('Attempted', 'Pass', 'Fail', 'Skip'))
+    print("%-9s %-4s %-4s %-4s" % ('---------', '----', '----', '----'))
+    print("%9s %4s %4s %4s" % (attempted, passed, failed, skipped))
 
     fstab = {}
-    fstabFile = "/etc/fstab"
-    # fstabFile = "fstab"
+    file_name = FSTAB
+    fstab = parse_fstab(file_name)
 
-    fstab = parse(fstabFile)
-
-    print(fstab)
-
-    setFsStatus(fstab, dev, status='ok')
-    setFsRegion(fstab, dev, region)
-    setFsDimms(fstab, dev, dimms)
-
-    # status = 'ok'
-    # dev = '/dev/disk/by-uuid/4174d9c4-4d31-46f8-9116-20408e1a4465'  # pmem0
-    # setFsStatus(fstab, dev, status)
-
-    # dev = '/dev/disk/by-uuid/823973eb-8f85-40ce-a670-e8481df3de17'  # pmem1
-    # setFsStatus(fstab, dev, status)
-
-    printFstabTable(fstab)
+    print_fstab_table(fstab)
 
     print("PMFS with OK status: ", end='')
-    printFsMounts(fstab)
+    print_fs_mounts(fstab)
+
+
 
 def main():
-    print("This module is not intended to run standalone")
-    print("import this module into your script to use or use")
-    print("Persistent Memory Tool, pmt")
+    unitTests()
 
 
 if __name__ == "__main__":

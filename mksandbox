@@ -77,7 +77,7 @@ for d in pmemList:
     dst = UUID + hex(i)
     mntPt = "/pmem" + str(i)
 
-    blkDev = '/dev/disk/by-uuid' + dst
+    blkDev = '/dev/disk/by-uuid/' + dst
     line = ("%s %s %s %s %s %s\n") % (blkDev, mntPt, "xfs", "dax", "0", "0")
 
     f.write(line)
@@ -98,6 +98,5 @@ for d in pmemList:
     f.write(line)
 
     i = i +1
-
 f.close()
 

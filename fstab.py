@@ -10,6 +10,10 @@ import sys
 VERBOSE = 0
 DEBUG = 0
 
+DEFAULT_FSTAB_FILE = "/etc/fstab"
+DEFAULT_DEVDIR = "/dev"
+DEFAULT_DEV_UUID_DIR = DEFAULT_DEVDIR + "/disk/by-uuid/"
+
 # If working in a test sandbox, change paths
 # to start with path to sandbox
 #
@@ -19,13 +23,13 @@ else:
     SANDBOX = os.environ['SANDBOX']
     print('Enabling Sandbox at:', SANDBOX)
 
-FSTAB = SANDBOX + '/etc/fstab'
-DEVDIR = SANDBOX + '/dev'
-DEV_UUID = DEVDIR + '/disk/by-uuid/'
+FSTAB = SANDBOX + DEFAULT_FSTAB_FILE
+DEVDIR = SANDBOX + DEFAULT_DEVDIR
+DEV_UUID = DEVDIR + DEFAULT_DEV_UUID_DIR
 
-print("FSTAB", FSTAB)
-print("DEVDIR", DEVDIR)
-print("DEV_UUID", DEV_UUID)
+if VERBOSE: print("FSTAB", FSTAB)
+if VERBOSE: print("DEVDIR", DEVDIR)
+if VERBOSE: print("DEV_UUID", DEV_UUID)
 
 def unit_test_result(name, status):
     print("%-30s %-10s" % (name, status))
@@ -36,14 +40,16 @@ def fs_uuid_to_path(uuid):
          Input: UUID='eb0caaa8-8191-490d-b955-f3a73ed6fe26'
         Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
     """
-    path = DEV_UUID
+    # path = SANDBOX
+    path = "/homes/dplarsen/src/pmemtool/sandbox/dev/disk/by-uuid"
+    if DEBUG: print("    DEBUG: fs_uuid_to_path", uuid, path)
 
     # strip 'UUID="..."'chars from input
     tmp1 = uuid.replace('"', '')     # replace teh quotes
     tmp2 = tmp1.replace('UUID=', '') # remove UUID=
 
     # append UUID to path
-    path = path + tmp2
+    path = path + "/" + tmp2
 
     return path
 
@@ -107,7 +113,7 @@ def fs_uuid_path_to_block_dev(path):
     if os.path.islink(path):
         target = os.readlink(path)
 
-    print("fs_uuid_path_to_block_dev:", path, target)
+    if DEBUG: print("fs_uuid_path_to_block_dev:", path, target)
     #strip the preceeding relative path
     # cheating a bit cuz I know the real path
     # block_dev = path.replace('../../','')
@@ -166,15 +172,20 @@ def parse_fstab(file_name=FSTAB):
             fs_type = ' '.join(line[2:3])
             fs_opts = ' '.join(line[3:4])
 
-            if DEBUG: print("DEBUG DEV:", dev)
+            # if DEBUG: print("DEBUG DEV:", dev)
 
+            if not dev.startswith("UUID=") and not dev.startswith("/dev/disk/by-uuid") and not dev.startswith("/dev/pmem"):
+                if DEBUG: print("   skipping", dev)
+                continue
             # three possible formats for the dev
             # - - - - - - - - - - - - - - - - - - - - -
             #      fs uuid: UUID="367d56f1-c47f-47f0-8350-1e3d543eebfd"
             if dev.startswith("UUID="):
                 if DEBUG: print('startswith("UUID=")')
                 uuid_path = fs_uuid_to_path(dev)
+                if DEBUG: print("    DEBUG: uuid_path", uuid_path)
                 block_dev = fs_uuid_path_to_block_dev(uuid_path)
+                if DEBUG: print("    DEBUG: block_dev:", block_dev)
 
             # fs uuid path: /dev/disk/by-uuid/367d56f1-c47f-47f0-8350-1e3d543eebfd
             if dev.startswith("/dev/disk/by-uuid"):
@@ -187,7 +198,8 @@ def parse_fstab(file_name=FSTAB):
                 if DEBUG: print('startswith("/dev/pmem)')
                 block_dev = block_dev_path_to_block_dev(dev)
 
-            if DEBUG: print('parse: block_dev:', dev, block_dev)
+            if DEBUG: print('  block_dev:', block_dev, end=",")
+            if DEBUG: print('  dev:', dev)
 
             # populate fstab dict with metadata for the dev listed in fstab
             if block_dev.startswith("pmem"):
@@ -250,7 +262,7 @@ def print_fs_mounts(fstab, status='ok', delimiter=';'):
     print()
 
 def set_fs_status(fstab, dev, status='ok'):
-    #print("set_fs_status: dev:", dev, " status:", status)
+    if DEBUG: print("set_fs_status: dev:", dev, " status:", status)
     fstab[dev]['status'] = status
 
 def test_set_fs_status():

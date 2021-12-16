@@ -1,13 +1,8 @@
 #!/usr/bin/python3
 
 # PMTOOL (pmt)
-#
-# @ Copyright Intel 2021
-# Released under NDA to Walgreens for use with Optane Persistent Memory
-# All rights reserved
-# Provided as Sample Code with no warranty
-# December 06, 2021
-# Version: 0.71
+# Copyright (C) David P Larsen
+# Released under MIT License
 
 
 import ndctl as n
@@ -27,13 +22,18 @@ debug = 0
 ndctl = {}
 fstab = {}
 
-# Lists used
-regionList = []
-dimmList = []
-nsList = []
-nsDeviceList = []
-nsNameList = []
+dimm_list = []
+skip_ndctl_dump = False
 
+def check_user_is_root():
+    status = False
+    uid = os.getuid()
+    if uid == 0:
+        status = True
+    else:
+        print("You must either SUDO or be root to run this script")
+        print("Your User ID:", uid)
+    return bool(status)
 
 def main(argv):
     # process command line arguments
@@ -45,51 +45,87 @@ def main(argv):
 
     ap.add_argument("--delimiter", required=False, help="Delimiter for pmfs mount path. Default:';'")
     ap.add_argument("--suffix", required=False, help="string to append to pmfs mount path Default:''")
+    ap.add_argument("--ndctl_file", required=False, help=" path to ndctl data file.  Default:''")
+    ap.add_argument("--fstab_file", required=False, help="path to fstab file. Default:''")
+    ap.add_argument("--sandbox", required=False, help="path to optional sandbox environment. Default:''")
+    ap.add_argument("--skip_ndctl_dump", required=False, help="flag to control whether to create a new ndctl data file. default:'False'")
 
     args = vars(ap.parse_args())
+
+
+    if args['ndctl_file']:  n.NDCTL_FILE = args['ndctl_file']
+    if args['fstab_file']:  f.FSTAB_FILE = args['fstab_file']
+
+    if args['sandbox']:
+        sandbox_path = args['sandbox']
+        os.environ['SANDBOX'] = sandbox_path
+        ndctl_file = sandbox_path + n.DEFAULT_NDCTL_FILE
+        fstab_file = sandbox_path + f.DEFAULT_FSTAB_FILE
 
     if args['delimiter']:  delimiter = args['delimiter']
     if args['suffix']:     fsSuffix = args['suffix']
 
-    # dump NDCTL Data
-    n.dump()
+    if not check_user_is_root():
+        sys.exit(1)
 
-    # parse NDCTL Data
-    ndctl = n.parse()
+    # dump NDCTL Data - useful in dev & debugging
+    if not skip_ndctl_dump:
+        n.dump(ndctl_file)
 
-    # parse FSTAB PMEM entries
-    fstab = f.parse()
+    if os.path.exists(ndctl_file):
+        ndctl = n.parse(ndctl_file)
+    else:
+        print("Failed to parse NDCTL data file:", ndctl_file)
+        sys.exit(2)
+
+    if os.path.exists(fstab_file):
+        fstab = f.parse_fstab(fstab_file)
+    else:
+        print("Error: Failed to parse FSTAB file:", fstab_file)
+        sys.exit(3)
+
+    if debug: print("DEBUG: FSTAB", fstab)
+
+    if not fstab:
+        print("ERROR: fstab object is empty")
+        sys.exit(4)
 
     # get list of all pmem dimms in system
-    dimmList = n.getDimmList()
-    dimmList.sort()
+    dimm_list = n.get_dimm_list()
+    dimm_list.sort()
 
     # merge key data from NDCTL into FSTAB structures
     #
     # update fstab status from DIMM Status
     # for each dimm:
-    for dimm in dimmList:
-        status  = n.getDimmStatus(dimm)
+    for dimm in dimm_list:
+        status  = n.get_dimm_status(dimm)
 
         # get the list of namespace devices (pmemX) for this DIMM
-        nsDevList = n.getNsDeviceListByDimm(dimm)
+        nsDevList = n.get_ns_device_list_by_dimm(dimm)
+        #nsDevList = n.getNsDeviceListByDimm(dimm)
 
         # since DIMM status affects region status, which affects namespaces
         # on that region, we can use that status to infer the health of the namespace
         #
         # for each namespace device, update fs status with DIMM status
         for dev in nsDevList:
-            f.setFsStatus(fstab, dev, status)
+            # f.setFsStatus(fstab, dev, status)
+            f.set_fs_status(fstab, dev, status)
 
         # look up the region that DIMM is part of, and add it to the fstab structure
-        region  = n.getRegionByDimm(dimm)
-        f.setFsRegion(fstab, dev, region)
+        # region  = n.getRegionByDimm(dimm)
+        region  = n.get_region_by_dimm(dimm)
+        # f.setFsRegion(fstab, dev, region)
+        f.set_fs_region(fstab, dev, region)
 
         # look up all the DIMM's associated with this region
         # region DIMM List
-        rList = n.getRegionDimmList(region)
+        # rList = n.getRegionDimmList(region)
+        rList = n.get_region_dimm_list(region)
         dimms = ' '.join(rList)
-        f.setFsDimms(fstab, dev, dimms)
+        # f.setFsDimms(fstab, dev, dimms)
+        f.set_fs_dimms(fstab, dev, dimms)
 
     # Reporting Section
 
@@ -116,7 +152,8 @@ def main(argv):
     print()
     print("Optane Persistent Memory DIMM Status")
     print()
-    n.listDimmTable()
+    # n.listDimmTable()
+    n.list_dimm_table()
 
 
     # printFstabTable() Current View looks like this:
@@ -127,7 +164,8 @@ def main(argv):
     # ok     region1  pmem1      fsdaX    xfs      /pmemfs1             nmem11 nmem10 nmem9 nmem8 nmem7 nmem6
     #
     print()
-    f.printFstabTable(fstab)
+    # f.printFstabTable(fstab)
+    f.print_fstab_table(fstab)
     print()
 
     # printFsMounts() Current View looks like this:
@@ -144,7 +182,8 @@ def main(argv):
     suffix = fsSuffix + delimiter
     print()
     print("PMFS with OK status: ", end='')
-    f.printFsMounts(fstab,'ok', suffix)
+    # f.printFsMounts(fstab,'ok', suffix)
+    f.print_fs_mounts(fstab,'ok', suffix)
 
 if __name__ == "__main__":
     main(sys.argv[1:])

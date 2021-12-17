@@ -5,18 +5,19 @@
 # Released under MIT License
 
 
-import ndctl as n
-import fstab as f
-
 import sys
 import os
 import argparse
 
-global verbose
-global debug
+global VERBOSE
+global DEBUG
 
-verbose = 0
-debug = 0
+VERBOSE = 0
+DEBUG = 0
+
+import ndctl as n
+import fstab as f
+from common import message, get_linenumber
 
 # Dicts used
 ndctl = {}
@@ -38,6 +39,12 @@ def check_user_is_root():
 def main(argv):
     # process command line arguments
 
+    global VERBOSE
+    global DEBUG
+
+    ndctl_file = n.DEFAULT_NDCTL_FILE
+    fstab_file = f.DEFAULT_FSTAB_FILE
+
     delimiter = '; '
     fsSuffix = ''
 
@@ -49,12 +56,16 @@ def main(argv):
     ap.add_argument("--fstab_file", required=False, help="path to fstab file. Default:''")
     ap.add_argument("--sandbox", required=False, help="path to optional sandbox environment. Default:''")
     ap.add_argument("--skip_ndctl_dump", required=False, help="flag to control whether to create a new ndctl data file. default:'False'")
+    ap.add_argument("--verbose", required=False, help="enable Verbose mode")
+    ap.add_argument("--debug", required=False, help="enable debug mode")
 
     args = vars(ap.parse_args())
 
 
-    if args['ndctl_file']:  n.NDCTL_FILE = args['ndctl_file']
-    if args['fstab_file']:  f.FSTAB_FILE = args['fstab_file']
+    if args['ndctl_file']:  ndctl_file = args['ndctl_file']
+    if args['fstab_file']:  fstab_file = args['fstab_file']
+    if args['delimiter']:  delimiter = args['delimiter']
+    if args['suffix']:     fsSuffix = args['suffix']
 
     if args['sandbox']:
         sandbox_path = args['sandbox']
@@ -62,127 +73,115 @@ def main(argv):
         ndctl_file = sandbox_path + n.DEFAULT_NDCTL_FILE
         fstab_file = sandbox_path + f.DEFAULT_FSTAB_FILE
 
-    if args['delimiter']:  delimiter = args['delimiter']
-    if args['suffix']:     fsSuffix = args['suffix']
+    if args['verbose']:
+        VERBOSE = args['verbose']
+        n.VERBOSE = args['verbose']
+        f.VERBOSE = args['verbose']
 
+    if args['debug']:
+        DEBUG = 1
+        n.DEBUG = 1
+        f.DEBUG = 1
+
+    message("checking if current user is privileged", 1)
     if not check_user_is_root():
+        message("No - not privileged", 1)
         sys.exit(1)
-
-    # dump NDCTL Data - useful in dev & debugging
-    if not skip_ndctl_dump:
-        n.dump(ndctl_file)
-
-    if os.path.exists(ndctl_file):
-        ndctl = n.parse(ndctl_file)
     else:
-        print("Failed to parse NDCTL data file:", ndctl_file)
-        sys.exit(2)
+        message("Yes", 1)
 
     if os.path.exists(fstab_file):
+        message("processing fstab data", 1)
         fstab = f.parse_fstab(fstab_file)
+        message("done", 1)
     else:
-        print("Error: Failed to parse FSTAB file:", fstab_file)
+        print("Error: missing fstab file:", fstab_file)
         sys.exit(3)
 
-    if debug: print("DEBUG: FSTAB", fstab)
-
     if not fstab:
-        print("ERROR: fstab object is empty")
+        message("\nFound no Persistent Memory Filesystems in fstab\n",0,'   ')
+        message("Checked for fstab block device entries:",0,'   ')
+        message("  starting with: /dev/disk/by-uuid/ with links to /dev/pmemX",0,'   ')
+        message("  starting with: UUID= with links to /dev/pmemX",0,'   ')
+        message("  starting with: /dev/pmem",0,'   ')
+        message("\nPlease verifiy fstab contains PMFS entries\n",0,'   ')
         sys.exit(4)
 
+    message("preparing ndctl data dump",1)
+    if not skip_ndctl_dump:
+        n.dump(ndctl_file)
+        message("done",1)
+    else:
+        message("Skipped due to skip_ndctl_dump flag",1)
+
+
+    message("parsing ndctl data dump",1)
+    if os.path.exists(ndctl_file):
+        ndctl = n.parse(ndctl_file)
+        message("Finshed parsing ndcl data",1)
+    else:
+        print("Missing NDCTL data file:", ndctl_file)
+        sys.exit(2)
+
+
     # get list of all pmem dimms in system
+    message("generating list of dimms",1)
     dimm_list = n.get_dimm_list()
     dimm_list.sort()
+    message("done",1)
 
-    # merge key data from NDCTL into FSTAB structures
-    #
-    # update fstab status from DIMM Status
-    # for each dimm:
+    if VERBOSE: print("ndctl and fstab data merge start")
+    message("",1)
     for dimm in dimm_list:
         status  = n.get_dimm_status(dimm)
 
         # get the list of namespace devices (pmemX) for this DIMM
+        msg = "%s %s %s" % ("generating namespace device list for", dimm, '')
+        message(msg,1)
         nsDevList = n.get_ns_device_list_by_dimm(dimm)
-        #nsDevList = n.getNsDeviceListByDimm(dimm)
+        msg = "%s %s %s" % ("ns device list", '', '')
+        message(msg,1)
 
         # since DIMM status affects region status, which affects namespaces
         # on that region, we can use that status to infer the health of the namespace
         #
         # for each namespace device, update fs status with DIMM status
+        msg = "%s %s %s" % ("updating namespace status from dimm status", '', '')
+        message(msg,1)
         for dev in nsDevList:
-            # f.setFsStatus(fstab, dev, status)
+            msg = "%s %s %s" % ("updating namespace status from dimm status", dev, status)
+            message(msg,1)
             f.set_fs_status(fstab, dev, status)
+        msg = "%s %s %s" % ("done", '', '')
+        message(msg,1)
 
-        # look up the region that DIMM is part of, and add it to the fstab structure
-        # region  = n.getRegionByDimm(dimm)
+        msg = "%s %s %s" % ("updating fstab namespace region", dev, '')
+        message("",1)
         region  = n.get_region_by_dimm(dimm)
-        # f.setFsRegion(fstab, dev, region)
         f.set_fs_region(fstab, dev, region)
+        message("",1)
+        msg = "%s %s %s" % ("", dev, '')
+        # if VERBOSE: print("done")
 
-        # look up all the DIMM's associated with this region
-        # region DIMM List
-        # rList = n.getRegionDimmList(region)
-        rList = n.get_region_dimm_list(region)
-        dimms = ' '.join(rList)
-        # f.setFsDimms(fstab, dev, dimms)
+        msg = "%s %s %s" % ("updating namespace dimm list", dev, '')
+        message(msg,1)
+        dList = n.get_region_dimm_list(region)
+        dimms = ' '.join(dList)
         f.set_fs_dimms(fstab, dev, dimms)
+        msg = "%s %s %s %s" % ("updated entry ", dev, ' with:', dimms)
+        message(msg,1)
 
-    # Reporting Section
+    message("ndctl and fstab data merge complete",1)
+    message("Sending Reports",1)
 
-    # Current View looks like this:
-    #
-    # Optane Persistent Memory DIMM Status
-    #
-    # Linux    DIMM   DIMM   Cntrl  Remaining
-    # Device   Health Temp   Temp   Life
-    # ------   ------ ------ ------ ----
-    # nmem1    ok     33.0   33.0   100
-    # nmem3    ok     34.0   35.0   100
-    # nmem5    ok     32.0   34.0   100
-    # nmem10   ok     32.0   36.0   100
-    # nmem7    ok     34.0   34.0   100
-    # nmem9    ok     34.0   34.0   100
-    # nmem0    ok     34.0   34.0   100
-    # nmem2    ok     32.0   34.0   100
-    # nmem4    ok     34.0   36.0   100
-    # nmem6    ok     33.0   36.0   100
-    # nmem11   ok     31.0   34.0   100
-    # nmem8    ok     33.0   34.0   100
-
-    print()
-    print("Optane Persistent Memory DIMM Status")
-    print()
-    # n.listDimmTable()
     n.list_dimm_table()
 
-
-    # printFstabTable() Current View looks like this:
-    #
-    # Health Region   NS dev     NS Type  fs_type  mount                               dimms
-    # ------ -------  ------     ------   ------   -------------------- --------------------
-    # ok     region0  pmem0      fsdaX    xfs      /pmemfs0             nmem5 nmem4 nmem3 nmem2 nmem1 nmem0
-    # ok     region1  pmem1      fsdaX    xfs      /pmemfs1             nmem11 nmem10 nmem9 nmem8 nmem7 nmem6
-    #
     print()
-    # f.printFstabTable(fstab)
     f.print_fstab_table(fstab)
     print()
 
-    # printFsMounts() Current View looks like this:
-    #
-    # PMFS with OK status: /pmemfs0/sap; /pmemfs1/sap;
-    #
-    # suffix = string to append to end of fs mount point from fstab
-    #   default: suffix == '' (none)
-    #
-    # delimiter = string to use to delimit list of mount points
-    #
-    #   default: delimiter == ';' (semicolon)
-    #
     suffix = fsSuffix + delimiter
-    print()
-    print("PMFS with OK status: ", end='')
-    # f.printFsMounts(fstab,'ok', suffix)
+    print("\nPMFS with OK status: ", end='')
     f.print_fs_mounts(fstab,'ok', suffix)
 
 if __name__ == "__main__":

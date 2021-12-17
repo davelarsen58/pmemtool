@@ -6,13 +6,14 @@
 
 import os
 import sys
+from common import message, get_linenumber
 
 VERBOSE = 0
 DEBUG = 0
 
 DEFAULT_FSTAB_FILE = "/etc/fstab"
 DEFAULT_DEVDIR = "/dev"
-DEFAULT_DEV_UUID_DIR = DEFAULT_DEVDIR + "/disk/by-uuid/"
+DEFAULT_DEV_UUID_DIR = DEFAULT_DEVDIR + "/disk/by-uuid"
 
 # If working in a test sandbox, change paths
 # to start with path to sandbox
@@ -25,7 +26,7 @@ else:
 
 FSTAB = SANDBOX + DEFAULT_FSTAB_FILE
 DEVDIR = SANDBOX + DEFAULT_DEVDIR
-DEV_UUID = DEVDIR + DEFAULT_DEV_UUID_DIR
+DEV_UUID = SANDBOX + DEFAULT_DEV_UUID_DIR
 
 if VERBOSE: print("FSTAB", FSTAB)
 if VERBOSE: print("DEVDIR", DEVDIR)
@@ -40,9 +41,9 @@ def fs_uuid_to_path(uuid):
          Input: UUID='eb0caaa8-8191-490d-b955-f3a73ed6fe26'
         Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
     """
-    # path = SANDBOX
-    path = "/homes/dplarsen/src/pmemtool/sandbox/dev/disk/by-uuid"
+    path = DEV_UUID
     if DEBUG: print("    DEBUG: fs_uuid_to_path", uuid, path)
+
 
     # strip 'UUID="..."'chars from input
     tmp1 = uuid.replace('"', '')     # replace teh quotes
@@ -114,9 +115,6 @@ def fs_uuid_path_to_block_dev(path):
         target = os.readlink(path)
 
     if DEBUG: print("fs_uuid_path_to_block_dev:", path, target)
-    #strip the preceeding relative path
-    # cheating a bit cuz I know the real path
-    # block_dev = path.replace('../../','')
     block_dev = os.path.basename(target)
 
     return block_dev
@@ -127,11 +125,11 @@ def test_fs_uuid_path_to_block_dev():
     """
     dev = "pmem0"
     real_path = DEV_UUID + '5038fb23-6374-4d03-81b9-93d6c984eb0x0'
+    block_dev = "X"
 
     if os.path.islink(real_path):
         target = os.readlink(real_path)
-
-    block_dev = os.path.basename(target)
+        block_dev = os.path.basename(target)
 
     if dev == block_dev:
         status = 'Pass'
@@ -142,7 +140,6 @@ def test_fs_uuid_path_to_block_dev():
 
     return status
 
-
 def parse_fstab(file_name=FSTAB):
     """
         parses fstab into a dict, and returned to the caller
@@ -150,18 +147,26 @@ def parse_fstab(file_name=FSTAB):
     fstab = {}
     block_dev = ''
 
-    # DEBUG = 1
 
-    if DEBUG: print("DEBUG: Function:", __name__, "File:", file_name)
-    if VERBOSE: print('  Parsing fstab:', file_name, end="...")
+    msg = "%s %s %s" % (get_linenumber(), ":Beginning parse_fstab", file_name)
+    message(msg, 1)
 
     with open(file_name, "r") as f:
         for line in f:
             stripped_line = line.strip()
 
+            msg = "%s %s %s" % (get_linenumber(), ":reading fstab: ", stripped_line)
+            message(msg, 3)
+
             # skip empty and commented lines
-            if stripped_line.startswith("#"): continue
-            if len(stripped_line) == 0: continue
+            if stripped_line.startswith("#"):
+                msg = "%s %s %s %s" % (get_linenumber(), ":skipping comment #: ", "", "")
+                message(msg, 2)
+                continue
+            if len(stripped_line) == 0:
+                msg = "%s %s %s %s" % (get_linenumber(), ":skipping empty line: ", "", "")
+                message(msg, 2)
+                continue
 
             # parse line into fields
             line = stripped_line.split()
@@ -172,35 +177,51 @@ def parse_fstab(file_name=FSTAB):
             fs_type = ' '.join(line[2:3])
             fs_opts = ' '.join(line[3:4])
 
-            # if DEBUG: print("DEBUG DEV:", dev)
+            msg = "%s %s %s %s" % (get_linenumber(), ":fstab entry: ", dev, mnt)
+            message(msg, 2)
 
             if not dev.startswith("UUID=") and not dev.startswith("/dev/disk/by-uuid") and not dev.startswith("/dev/pmem"):
-                if DEBUG: print("   skipping", dev)
+                msg = "%s %s %s %s" % (get_linenumber(), ":skipping non-interesting line", dev, mnt)
+                message(msg, 3)
                 continue
+
             # three possible formats for the dev
             # - - - - - - - - - - - - - - - - - - - - -
             #      fs uuid: UUID="367d56f1-c47f-47f0-8350-1e3d543eebfd"
             if dev.startswith("UUID="):
-                if DEBUG: print('startswith("UUID=")')
-                uuid_path = fs_uuid_to_path(dev)
-                if DEBUG: print("    DEBUG: uuid_path", uuid_path)
-                block_dev = fs_uuid_path_to_block_dev(uuid_path)
-                if DEBUG: print("    DEBUG: block_dev:", block_dev)
+                msg = "%s %s %s %s" % (get_linenumber(), ":startswith UUID= ", dev, mnt)
+                message(msg, 3)
 
-            # fs uuid path: /dev/disk/by-uuid/367d56f1-c47f-47f0-8350-1e3d543eebfd
+                uuid_path = fs_uuid_to_path(dev)
+                msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_to_path(dev) ", dev, uuid_path)
+                message(msg, 4)
+
+                block_dev = fs_uuid_path_to_block_dev(uuid_path)
+                msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_path_to_block_dev(uuid_path) ", uuid_path, block_dev)
+                message(msg, 4,"CMD:")
+
             if dev.startswith("/dev/disk/by-uuid"):
-                if DEBUG: print('startswith("/dev/disk/by-uuid")')
+                msg = "%s %s %s %s" % (get_linenumber(), ":startswith /dev/disk/by-uuid: ", "", "")
+                message(msg, 3,"CMD:")
+
                 dev_path = SANDBOX + dev
+                msg = "%s %s %s %s" % (get_linenumber(), ":Path Change: dev_path ", dev_path, "")
+                message(msg, 4,"CMD:")
+
                 block_dev = fs_uuid_path_to_block_dev(dev_path)
+                msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_path_to_block_dev(dev_path): ", block_dev, dev_path)
+                message(msg, 4,"CMD:")
 
             #  blockdev path: /dev/pmem0
             if dev.startswith("/dev/pmem"):
-                if DEBUG: print('startswith("/dev/pmem)')
+
                 block_dev = block_dev_path_to_block_dev(dev)
+                msg = "%s %s %s %s" % (get_linenumber(), ":startswith /dev/pmem: ", dev, block_dev)
+                message(msg, 4,"CMD:")
 
-            if DEBUG: print('  block_dev:', block_dev, end=",")
-            if DEBUG: print('  dev:', dev)
 
+            msg = "%s %s %s %s" % (get_linenumber(), ":populating fstab structure with K/V ", block_dev, '')
+            message(msg, 3)
             # populate fstab dict with metadata for the dev listed in fstab
             if block_dev.startswith("pmem"):
                 fstab[block_dev] = { \
@@ -216,9 +237,8 @@ def parse_fstab(file_name=FSTAB):
                         'dimms': 'dimms' \
                       }
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("FSTAB")
-    if DEBUG: print(fstab)
+    msg = "%s%s" % (get_linenumber(), " :End parse_fstab")
+    message(msg, 1)
 
     return fstab
 
@@ -347,7 +367,13 @@ def unitTests():
 
 
 def main():
-    unitTests()
+    # unitTests()
+
+    fstab = {}
+    file_name = FSTAB
+    fstab = parse_fstab(file_name)
+
+    print_fstab_table(fstab)
 
 
 if __name__ == "__main__":

@@ -28,12 +28,11 @@ DEV_UUID = DEVDIR + '/disk/by-uuid/'
 NDCTL_FILE = SANDBOX + "/tmp/ndctl_list_NDRH.txt"
 
 # print("FSTAB", FSTAB)
-if VERBOSE: print("DEVDIR", DEVDIR)
-if VERBOSE: print("DEV_UUID", DEV_UUID)
-if VERBOSE: print("NDCTL_FILE", NDCTL_FILE)
+# if VERBOSE: print("DEVDIR", DEVDIR)
+# if VERBOSE: print("DEV_UUID", DEV_UUID)
+# if VERBOSE: print("NDCTL_FILE", NDCTL_FILE)
 
 
-# ndctlFile = "/tmp/ndctl_list_NDRH.txt"
 ndctl = {}
 
 def dump(file_name = NDCTL_FILE):
@@ -41,14 +40,14 @@ def dump(file_name = NDCTL_FILE):
     dump the config to a file to parse
     """
 
-    if DEBUG: print("DEBUG: Function:", __name__, "File:", file_name )
-    if VERBOSE: print('  Querying ndctl data:', file_name, end="...")
+    # message("Function:", __name__, "File:", file_name )
+    # if VERBOSE: print('  Querying ndctl data:', file_name, end="...")
     
     # ndctl list -NDRH
     cmd = "/usr/bin/ndctl list -NDRH > " + file_name
     os.system(cmd)
 
-    if VERBOSE: print('Done')
+    # if VERBOSE: print('Done')
 
 def parse(file_name = NDCTL_FILE):
     """
@@ -57,14 +56,14 @@ def parse(file_name = NDCTL_FILE):
 
     global ndctl
 
-    if DEBUG: print("DEBUG: Function:", __name__, "File:", file_name )
-    if VERBOSE: print('  Parsing ndctl data:', file_name, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__, "File:", file_name )
+    # if VERBOSE: print('  Parsing ndctl data:', file_name, end="...")
 
     with open(file_name, 'r') as f:
         ndctl  =  json.load(f)
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, ":",  ndctl)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, ":",  ndctl)
 
     return ndctl
 
@@ -78,8 +77,8 @@ def get_region_dimm_list(region):
     global ndctl
     dimm_list = []
 
-    if DEBUG: print("DEBUG: Function:", __name__, "Region:", region )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__, "Region:", region )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     for r in range(len(ndctl['regions'])):
         # if this region matches arg, get DIMM mappings
@@ -89,8 +88,8 @@ def get_region_dimm_list(region):
                dimm_list.append(ndctl['regions'][r]['mappings'][d]['dimm'])
         continue
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, region, "DIMMS",  dimm_list)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, region, "DIMMS",  dimm_list)
 
     return dimm_list
 
@@ -102,14 +101,14 @@ def get_region_list():
     global ndctl
     region_list = []
 
-    if DEBUG: print("DEBUG: Function:", __name__ )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__ )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     for r in range(len(ndctl['regions'])):
         region_list.append(ndctl['regions'][r]['dev'])
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, ":",  region_list)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, ":",  region_list)
 
     return region_list
 
@@ -121,8 +120,8 @@ def get_region_ns_device_list(region):
     """
     ns_list = []
 
-    if DEBUG: print("DEBUG: Function:", __name__, "Region:", region )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__, "Region:", region )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     for r in range(len(ndctl['regions'])):
         # if this region matches arg, get DIMM mappings
@@ -132,7 +131,7 @@ def get_region_ns_device_list(region):
                ns_list.append(ndctl['regions'][r]['namespaces'][d]['blockdev'])
         continue
 
-    if VERBOSE: print('Done')
+    # if VERBOSE: print('Done')
 
     return ns_list
 
@@ -144,8 +143,8 @@ def get_region_ns_name_list(region):
     """
     ns_list = []
 
-    if DEBUG: print("DEBUG: Function:", __name__, "Region:", region )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__, "Region:", region )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     for r in range(len(ndctl['regions'])):
         # if this region matches arg, get DIMM mappings
@@ -155,7 +154,7 @@ def get_region_ns_name_list(region):
                ns_list.append(ndctl['regions'][r]['namespaces'][d]['dev'])
         continue
 
-    if VERBOSE: print('Done')
+    # if VERBOSE: print('Done')
 
     return ns_list
 
@@ -168,8 +167,8 @@ def get_dimm_status(dimm):
 
     # dimm_list = []
 
-    if DEBUG: print("DEBUG: Function:", __name__ )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__ )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     for d in range(len(ndctl['dimms'])):
         if DEBUG: print(ndctl['dimms'][d]['dev'], ndctl['dimms'][d]['health']['health_state'])
@@ -178,8 +177,8 @@ def get_dimm_status(dimm):
             status = ndctl['dimms'][d]['health']['health_state']
             break
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, ":",  dimmList)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, ":",  dimmList)
 
     return status
 
@@ -191,15 +190,15 @@ def get_dimm_list():
     """
     dimm_list = []
 
-    if DEBUG: print("DEBUG: Function:", __name__ )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__ )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     for d in range(len(ndctl['dimms'])):
         dimm_list.append(ndctl['dimms'][d]['dev'])
 
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, ":",  dimmList)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, ":",  dimmList)
 
     return dimm_list
 
@@ -211,8 +210,8 @@ def get_region_by_dimm(dimm):
     """
     region = "regionX"
 
-    if DEBUG: print("DEBUG: Function:", __name__ )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__ )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     # loop through regions, get dimmList for each, check if match
     for r in range(len(ndctl['regions'])):
@@ -221,13 +220,12 @@ def get_region_by_dimm(dimm):
         # print("get_region_by_dimm.r", r, region, dimmList )
         if dimm in dimmList: break
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, ":",  region)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, ":",  region)
 
     return region
 
 
-# WIP - not qite working right
 def get_ns_name_list_by_dimm(dimm):
     """
         Get PMEM Namespace name by DIMM 
@@ -235,8 +233,8 @@ def get_ns_name_list_by_dimm(dimm):
     """
     nsNameList = []
 
-    if DEBUG: print("DEBUG: Function:", __name__ )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__ )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     # loop through regions, get dimmList for each, check if match
     for r in range(len(ndctl['regions'])):
@@ -248,8 +246,8 @@ def get_ns_name_list_by_dimm(dimm):
 
         if dimm in dimmList: break
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, ":",  nsNameList)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, ":",  nsNameList)
 
     return nsNameList
 
@@ -262,8 +260,8 @@ def get_ns_device_list_by_dimm(dimm):
     ns_device_list = []
     dimm_list = []
 
-    if DEBUG: print("DEBUG: Function:", __name__ )
-    if VERBOSE: print('  getting:', __name__, end="...")
+    # if DEBUG: print("DEBUG: Function:", __name__ )
+    # if VERBOSE: print('  getting:', __name__, end="...")
 
     # loop through regions, get dimmList for each, check if match
     for r in range(len(ndctl['regions'])):
@@ -275,14 +273,16 @@ def get_ns_device_list_by_dimm(dimm):
 
         if dimm in dimm_list: break
 
-    if VERBOSE: print('Done')
-    if DEBUG: print("Debug:", __name__, ":",  ns_device_list)
+    # if VERBOSE: print('Done')
+    # if DEBUG: print("Debug:", __name__, ":",  ns_device_list)
 
     return ns_device_list
 
 def list_dimm_table():
 
-    # Heading
+    print()
+    print("Optane Persistent Memory DIMM Status")
+    print()
     print("%-8s %-6s %-6s %-6s %-6s" % ("Linux", "DIMM", "DIMM", "Cntrl", "Remaining") )
     print("%-8s %-6s %-6s %-6s %-6s" % ("Device", "Health", "Temp", "Temp", "Life") )
     print("%-8s %-6s %-6s %-6s %-6s" % ("------", "------", "------", "------", "----") )

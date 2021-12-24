@@ -77,6 +77,6 @@ optional arguments:
 # Common Usage
 ```./pmt```
 # Extending Capabilities
-Many additional capabilities can be added to [pmt](./pmt) through the modules [ndctl.py](./ndctl.py), [fsab.py](./fstab.py), and [common.py](./common.oy)
+Many additional capabilities can be added to [pmt](./pmt) through the modules [ndctl.py](./ndctl.py), [fsab.py](./fstab.py), and [common.py](./common.py)
 refer to the modules themselves
   

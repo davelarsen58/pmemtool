@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+ <SystemCapabilities>
+  <PlatformConfigSupported>1</PlatformConfigSupported>
+  <Alignment>1.000 GiB</Alignment>
+  <AllowedVolatileMode>Memory Mode</AllowedVolatileMode>
+  <CurrentVolatileMode>1LM</CurrentVolatileMode>
+  <AllowedAppDirectMode>App Direct</AllowedAppDirectMode>
+  <ModesSupported>1LM, Memory Mode, App Direct</ModesSupported>
+  <MinNamespaceSize>1.000 GiB</MinNamespaceSize>
+  <AppDirectMirrorSupported>0</AppDirectMirrorSupported>
+  <DimmSpareSupported>0</DimmSpareSupported>
+  <AppDirectMigrationSupported>0</AppDirectMigrationSupported>
+  <RenameNamespaceSupported>1</RenameNamespaceSupported>
+  <GrowAppDirectNamespaceSupported>0</GrowAppDirectNamespaceSupported>
+  <ShrinkAppDirectNamespaceSupported>0</ShrinkAppDirectNamespaceSupported>
+  <InitiateScrubSupported>0</InitiateScrubSupported>
+  <AdrSupported>1</AdrSupported>
+  <EraseDeviceDataSupported>0</EraseDeviceDataSupported>
+  <EnableDeviceSecuritySupported>0</EnableDeviceSecuritySupported>
+  <DisableDeviceSecuritySupported>1</DisableDeviceSecuritySupported>
+  <UnlockDeviceSecuritySupported>0</UnlockDeviceSecuritySupported>
+  <FreezeDeviceSecuritySupported>0</FreezeDeviceSecuritySupported>
+  <ChangeDevicePassphraseSupported>0</ChangeDevicePassphraseSupported>
+  <ChangeMasterPassphraseSupported>1</ChangeMasterPassphraseSupported>
+  <MasterEraseDeviceDataSupported>0</MasterEraseDeviceDataSupported>
+  <SupportedAppDirectSettings>x1 (ByOne), x2 - 4KB iMC x 4KB Channel (4KB_4KB), x3 - 4KB iMC x 4KB Channel (4KB_4KB), x4 - 4KB iMC x 4KB Channel (4KB_4KB), x6 - 4KB iMC x 4KB Channel (4KB_4KB)</SupportedAppDirectSettings>
+  <RecommendedAppDirectSettings>x1 (ByOne), x2 - 4KB iMC x 4KB Channel (4KB_4KB), x3 - 4KB iMC x 4KB Channel (4KB_4KB), x4 - 4KB iMC x 4KB Channel (4KB_4KB), x6 - 4KB iMC x 4KB Channel (4KB_4KB)</RecommendedAppDirectSettings>
+ </SystemCapabilities>

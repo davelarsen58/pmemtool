@@ -1,0 +1,20 @@
+[
+  {
+    "dev":"region1",
+    "size":"1512.00 GiB (1623.50 GB)",
+    "available_size":0,
+    "max_available_extent":0,
+    "type":"pmem",
+    "iset_id":"0x22e07f4857602ccc",
+    "persistence_domain":"memory_controller"
+  },
+  {
+    "dev":"region0",
+    "size":"1512.00 GiB (1623.50 GB)",
+    "available_size":0,
+    "max_available_extent":0,
+    "type":"pmem",
+    "iset_id":"0x9cb27f4810752ccc",
+    "persistence_domain":"memory_controller"
+  }
+]

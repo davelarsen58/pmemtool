@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+ <SocketList>
+  <Socket>
+   <SocketID>0x0000</SocketID>
+   <MappedMemoryLimit>4608.000 GiB</MappedMemoryLimit>
+   <TotalMappedMemory>1703.000 GiB</TotalMappedMemory>
+  </Socket>
+  <Socket>
+   <SocketID>0x0001</SocketID>
+   <MappedMemoryLimit>4608.000 GiB</MappedMemoryLimit>
+   <TotalMappedMemory>1704.000 GiB</TotalMappedMemory>
+  </Socket>
+ </SocketList>

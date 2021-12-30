@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# quick wrapper to call ndctl with various args
+# with output sent to file named after command
+#
+# useful for generating data files for testing
+#
+# example:
+#   ndlog list -RDH
+#   output gets sent to file named ndctl_list_-RDH.json
+
+cmd="ndctl $*"
+f="`echo $cmd | tr ' ' '_'`.json"
+
+# tell you what command line looks like
+echo $cmd
+# run command send to stdout and to file
+$cmd | tee $f

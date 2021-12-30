@@ -1,0 +1,38 @@
+<Error Type="201">Syntax Error: Invalid or unexpected token -socket0.
+Did you mean:
+     show -topology  [-dimm [DimmIDs]] [-socket [SocketIDs]] 
+
+     show -socket [SocketIDs] 
+
+     show -dimm [DimmIDs] [-socket [SocketIDs]] 
+
+     show -memoryresources  
+
+     show -system  -capabilities  
+
+     show [-dimm [DimmIDs]] -goal  [-socket [SocketIDs]] 
+
+     show -region [RegionIDs] [-socket [SocketIDs]] 
+
+     show -sensor [List of Sensors] [-dimm [DimmIDs]] 
+
+     show [-dimm [DimmIDs]] -performance [Performance Metrics] 
+
+     show [-dimm [DimmIDs]] -firmware  
+
+     show -preferences  
+
+     show -error (Thermal|Media) [-dimm [DimmIDs]] 
+
+     show -system [NFIT|PCAT|PMTT] 
+
+     show [-dimm [DimmIDs]] -pcd [Config|LSA] 
+
+     show [-dimm [DimmIDs]] -cap  
+
+     show -cel (DimmIDs) [-dimm [DimmIDs]] 
+
+     show -session  
+
+
+</Error>

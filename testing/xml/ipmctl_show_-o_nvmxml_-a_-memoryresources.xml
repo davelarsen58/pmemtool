@@ -1,0 +1,13 @@
+<Error Type="201">    Show memory allocation information for this platform.
+    show  [OPTIONS] -memoryresources 
+
+[OPTIONS]
+   [-help|-h] : Display Help for the command
+   [-verbose|-v] : Change the Debug Level Message Display
+   [-ddrt] : Used to specify DDRT as the desired transport protocol
+   [-smbus] : Used to specify SMBUS as the desired transport protocol
+   [-units|-u(B|MB|MiB|GB|GiB|TB|TiB)] : Changes the output format.
+   [-output|-o(text|nvmxml)] : Desired Unit for display
+                    
+
+</Error>

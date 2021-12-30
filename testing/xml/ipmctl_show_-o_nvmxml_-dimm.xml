@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+ <DimmList>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x0001</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x0011</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x0021</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x0101</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x0111</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x0121</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x1001</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x1011</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x1021</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x1101</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x1111</DimmID>
+  </Dimm>
+  <Dimm>
+   <Capacity>252.454 GiB</Capacity>
+   <HealthState>Healthy</HealthState>
+   <LockState>Disabled</LockState>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <DimmID>0x1121</DimmID>
+  </Dimm>
+ </DimmList>

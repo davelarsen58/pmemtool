@@ -1,0 +1,171 @@
+<?xml version="1.0"?>
+ <DimmTopologyList>
+  <DimmTopology>
+   <DimmID>0x0001</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x0026</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_A2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x0011</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x0028</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_B2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x0021</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x002a</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_C2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x0101</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x002c</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_D2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x0111</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x002e</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_E2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x0121</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x0030</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_F2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x1001</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x0032</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_A2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x1011</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x0034</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_B2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x1021</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x0036</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_C2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x1101</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x0038</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_D2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x1111</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x003a</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_E2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>0x1121</DimmID>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Capacity>252.438 GiB</Capacity>
+   <PhysicalID>0x003c</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_F2</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0025</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_A1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0027</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_B1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0029</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_C1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x002b</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_D1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x002d</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_E1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x002f</PhysicalID>
+   <DeviceLocator>CPU1_DIMM_F1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0031</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_A1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0033</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_B1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0035</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_C1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0037</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_D1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x0039</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_E1</DeviceLocator>
+  </DimmTopology>
+  <DimmTopology>
+   <DimmID>N/A</DimmID>
+   <MemoryType>DDR4</MemoryType>
+   <Capacity>32.000 GiB</Capacity>
+   <PhysicalID>0x003b</PhysicalID>
+   <DeviceLocator>CPU2_DIMM_F1</DeviceLocator>
+  </DimmTopology>
+ </DimmTopologyList>

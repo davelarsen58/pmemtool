@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+ <MemoryResources>
+  <data>
+   <MemoryType>Volatile</MemoryType>
+   <DDR>384.000 GiB</DDR>
+   <DCPMM>0.000 GiB</DCPMM>
+   <Total>384.000 GiB</Total>
+  </data>
+  <data>
+   <MemoryType>AppDirect</MemoryType>
+   <DDR>-</DDR>
+   <DCPMM>3024.000 GiB</DCPMM>
+   <Total>3024.000 GiB</Total>
+  </data>
+  <data>
+   <MemoryType>Cache</MemoryType>
+   <DDR>0.000 GiB</DDR>
+   <DCPMM>-</DCPMM>
+   <Total>0.000 GiB</Total>
+  </data>
+  <data>
+   <MemoryType>Inaccessible</MemoryType>
+   <DDR>-</DDR>
+   <DCPMM>5.452 GiB</DCPMM>
+   <Total>5.452 GiB</Total>
+  </data>
+  <data>
+   <MemoryType>Physical</MemoryType>
+   <DDR>384.000 GiB</DDR>
+   <DCPMM>3029.452 GiB</DCPMM>
+   <Total>3413.452 GiB</Total>
+  </data>
+ </MemoryResources>

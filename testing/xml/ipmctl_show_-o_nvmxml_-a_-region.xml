@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+ <RegionList>
+  <Region>
+   <SocketID>0x0000</SocketID>
+   <PersistentMemoryType>AppDirect</PersistentMemoryType>
+   <Capacity>1512.000 GiB</Capacity>
+   <FreeCapacity>0.000 GiB</FreeCapacity>
+   <HealthState>Healthy</HealthState>
+   <DimmID>0x0001, 0x0011, 0x0021, 0x0101, 0x0111, 0x0121</DimmID>
+   <RegionID>0x0001</RegionID>
+   <ISetID>0x9cb27f4810752ccc</ISetID>
+  </Region>
+  <Region>
+   <SocketID>0x0001</SocketID>
+   <PersistentMemoryType>AppDirect</PersistentMemoryType>
+   <Capacity>1512.000 GiB</Capacity>
+   <FreeCapacity>0.000 GiB</FreeCapacity>
+   <HealthState>Healthy</HealthState>
+   <DimmID>0x1001, 0x1011, 0x1021, 0x1101, 0x1111, 0x1121</DimmID>
+   <RegionID>0x0002</RegionID>
+   <ISetID>0x22e07f4857602ccc</ISetID>
+  </Region>
+ </RegionList>

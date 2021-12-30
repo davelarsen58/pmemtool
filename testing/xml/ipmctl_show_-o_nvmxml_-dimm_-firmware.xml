@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+ <DimmFirmwareList>
+  <DimmFirmware>
+   <DimmID>0x0001</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x0011</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x0021</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x0101</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x0111</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x0121</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x1001</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x1011</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x1021</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x1101</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x1111</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+  <DimmFirmware>
+   <DimmID>0x1121</DimmID>
+   <ActiveFWVersion>01.02.00.5446</ActiveFWVersion>
+   <StagedFWVersion>N/A</StagedFWVersion>
+   <StagedFWActivatable>Not activatable, reboot is required</StagedFWActivatable>
+   <FWUpdateStatus>Update loaded successfully</FWUpdateStatus>
+   <FWImageMaxSize>266240</FWImageMaxSize>
+   <QuiesceRequired>Not required</QuiesceRequired>
+   <ActivationTime>0</ActivationTime>
+  </DimmFirmware>
+ </DimmFirmwareList>

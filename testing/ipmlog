@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# quick wrapper to call ipmctl with various args
+# with output sent to file named after command
+#
+# useful for generating data files for testing
+#
+# example:
+#   ipmlog show -a -dimm
+#   output gets sent to file named ipmctl_show_-a_-dimm.xml
+
+
+cmd="ipmctl $*"
+f="`echo $cmd | tr ' ' '_'`.xml"
+
+# tell you command looks like
+echo $cmd
+# send to stdout and to file
+$cmd | tee $f

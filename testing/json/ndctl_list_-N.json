@@ -1,0 +1,22 @@
+[
+  {
+    "dev":"namespace1.0",
+    "mode":"fsdax",
+    "map":"dev",
+    "size":1598128390144,
+    "uuid":"51242dd0-691b-4716-aa4b-a61240374f89",
+    "sector_size":512,
+    "align":2097152,
+    "blockdev":"pmem1"
+  },
+  {
+    "dev":"namespace0.0",
+    "mode":"fsdax",
+    "map":"dev",
+    "size":1598128390144,
+    "uuid":"f699b420-b81a-4ec0-b7f1-eeed1b70e387",
+    "sector_size":512,
+    "align":2097152,
+    "blockdev":"pmem0"
+  }
+]

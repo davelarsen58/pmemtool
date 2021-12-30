@@ -1,0 +1,63 @@
+# Example complicated fstab
+#
+# Note the application was obfuscated on purpose as was IP addresses
+# however the structure is real and complicated to parse
+#
+UUID=83e13e5b-ba48-4e68-b357-2b20e93831e9 / xfs defaults 1 1
+UUID=DBAB-5F5D /boot/efi vfat defaults 0 0
+LABEL=SWAP swap swap defaults 0 0
+/dev/mapper/3600a0980383047592d244d506a526654 /var/crash xfs defaults 0 0
+
+10.0.4.42:/app1_data_db1_mnt00005_t050_vol                /app1/data/SID1/mnt00001  nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.4.31:/app1_data_db1_mnt00006_t050_vol                /app1/data/SID1/mnt00002  nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.5.34:/app1_log_db1_mnt00005_t050_vol                 /app1/log/SID1/mnt00001   nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.5.37:/app1_log_db1_mnt00006_t050_vol                 /app1/log/SID1/mnt00002   nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.31:/app1_log_backups_db1_mnt00005_t050_vol         /app1/logbackups/SID1     nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.40:/app1_shared_db1_mnt00005_t50_vol/shared        /app1/shared/SID1         nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.40:/app1_shared_db1_mnt00005_t50_vol/usr_app_node5 /usr/app/SID1             nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.4.38:/app1_data2_db1_mnt00005_t050_vol               /app1/data2/SID1/mnt00001 nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.4.40:/app1_data2_db1_mnt00006_t050_vol               /app1/data2/SID1/mnt00002 nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+
+#10.0.1.33:/app1_data_db1_mnt00005_t050_vol /app1/data/SID1/mnt00001 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.31:/app1_data_db1_mnt00006_t050_vol /app1/data/SID1/mnt00002 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.34:/app1_log_db1_mnt00005_t050_vol /app1/log/SID1/mnt00001 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.32:/app1_log_db1_mnt00006_t050_vol /app1/log/SID1/mnt00002 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.4.35:/app1_log_backups_db1_mnt00005_t050_vol /app1/logbackups/SID1 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.34:/app1_shared_db1_mnt00005_t50_vol/shared /app1/shared/SID1 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.34:/app1_shared_db1_mnt00005_t50_vol/usr_app_node5 /usr/app/SID1 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.38:/app1_data2_db1_mnt00005_t050_vol                /app1/data2/SID1/mnt00001                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.40:/app1_data2_db1_mnt00006_t050_vol                /app1/data2/SID1/mnt00002                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.31:/app1_data3_db1_mnt00005_t050_vol                /app1/data3/SID1/mnt00001                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.41:/app1_data3_db1_mnt00006_t050_vol                /app1/data3/SID1/mnt00002                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.35:/app1_data4_db1_mnt00005_t050_vol                /app1/data4/SID1/mnt00001                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.0.1.42:/app1_data4_db1_mnt00006_t050_vol                /app1/data4/SID1/mnt00002                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+##Created tmpfs for APP DB Requirement##
+##SID2 Mount##
+10.0.1.31:/app1_data_db2_mnt00005_t050_vol          /app1/data/SID2/mnt00001  nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.31:/app1_log_db2_mnt00005_t050_vol           /app1/log/SID2/mnt00001   nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.31:/app1_data_db2_mnt00006_t050_vol          /app1/data/SID2/mnt00002  nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.31:/app1_log_db2_mnt00006_t050_vol           /app1/log/SID2/mnt00002   nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.32:/app1_shared_db2_t050_vol05/shared        /app1/shared/SID2         nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.32:/app1_shared_db2_t050_vol05/usr_app_node5 /usr/app/SID2             nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.38:/app1_data2_db2_mnt00005_t050_vol         /app1/data2/SID2/mnt00001 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.0.1.31:/app1_data2_db2_mnt00006_t050_vol         /app1/data2/SID2/mnt00002 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+
+#PMEM Section
+UUID="6fc35537-5108-4bdf-b788-70a7aad8b32b" /app1/pmem/nv01 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="d13f272b-d420-4bc6-a4d0-b40eb24a4f9c" /app1/pmem/nv02 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="48a8ac0f-a72d-4e06-a7a9-2dd4dd5888fe" /app1/pmem/nv03 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="3aaf1c44-9017-42de-a221-0ebef99c9ca9" /app1/pmem/nv04 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="ce032e79-06ed-4ef8-bb32-4f83c4b1be7b" /app1/pmem/nv05 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="9b058444-7001-4cde-93c7-a7f9b5871ee5" /app1/pmem/nv06 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="65ee99cb-6a80-42ca-82b8-f4568c3247e8" /app1/pmem/nv07 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+###### Old entry UUID="5f31cbda-f7f8-4e12-879d-3cf714c3c92d" /app1/pmem/nv07 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="eb0caaa8-8191-490d-b955-f3a73ed6fe26" /app1/pmem/nv08 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="27559cbc-c04d-4776-99e9-889ef205dd33" /app1/pmem/nv09 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="54922eca-01f5-4401-8a47-b9eb0650da97" /app1/pmem/nv10 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="c42d959a-cf7c-4125-af6d-6576b5eaf7ca" /app1/pmem/nv11 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="5075fe41-ac0c-4717-b892-b8e537ffc8c0" /app1/pmem/nv12 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="b2fab70d-91f2-497f-813e-c197fe6f02c9" /app1/pmem/nv13 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="caffbcc4-2d9f-495e-80ad-d73405ff76d9" /app1/pmem/nv14 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="5d897596-301f-443c-9776-6e81ee1eba0b" /app1/pmem/nv15 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="cb8533d0-026b-468f-9baa-7b1dff400ce7" /app1/pmem/nv16 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+

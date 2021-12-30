@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+ <DimmList>
+  <Dimm>
+   <DimmID>0x0001</DimmID>
+   <Capacity>252.454 GiB</Capacity>
+   <LockState>Disabled</LockState>
+   <SVNDowngrade>Unknown</SVNDowngrade>
+   <SecureErasePolicy>Unknown</SecureErasePolicy>
+   <S3ResumeOptIn>Unknown</S3ResumeOptIn>
+   <FwActivateOptIn>Unknown</FwActivateOptIn>
+   <HealthState>Healthy</HealthState>
+   <HealthStateReason>None</HealthStateReason>
+   <FWVersion>01.02.00.5446</FWVersion>
+   <FWAPIVersion>01.15</FWAPIVersion>
+   <InterfaceFormatCode>0x0301 (Non-Energy Backed Byte Addressable)</InterfaceFormatCode>
+   <ManageabilityState>Manageable</ManageabilityState>
+   <PopulationViolation>No</PopulationViolation>
+   <PhysicalID>0x0026</PhysicalID>
+   <DimmHandle>0x0001</DimmHandle>
+   <DimmUID>8089-a2-1836-00002c4b</DimmUID>
+   <SocketID>0x0000</SocketID>
+   <MemControllerID>0x0000</MemControllerID>
+   <ChannelID>0x0000</ChannelID>
+   <ChannelPos>1</ChannelPos>
+   <MemoryType>Logical Non-Volatile Device</MemoryType>
+   <Manufacturer>Intel</Manufacturer>
+   <VendorID>0x8089</VendorID>
+   <DeviceID>0x5141</DeviceID>
+   <RevisionID>0x0000</RevisionID>
+   <SubsystemVendorID>0x8089</SubsystemVendorID>
+   <SubsystemDeviceID>0x097a</SubsystemDeviceID>
+   <SubsystemRevisionID>0x0018</SubsystemRevisionID>
+   <DeviceLocator>CPU1_DIMM_A2</DeviceLocator>
+   <ManufacturingInfoValid>1</ManufacturingInfoValid>
+   <ManufacturingLocation>0xa2</ManufacturingLocation>
+   <ManufacturingDate>18-36</ManufacturingDate>
+   <SerialNumber>0x00002c4b</SerialNumber>
+   <PartNumber>NMA1XBD256GQS</PartNumber>
+   <BankLabel>NODE 1</BankLabel>
+   <DataWidth>64 b</DataWidth>
+   <TotalWidth>72 b</TotalWidth>
+   <Speed>2666 MT/s</Speed>
+   <FormFactor>DIMM</FormFactor>
+   <ManufacturerID>0x8089</ManufacturerID>
+   <ControllerRevisionID>B0, 0x0020</ControllerRevisionID>
+   <MemoryCapacity>0.000 GiB</MemoryCapacity>
+   <AppDirectCapacity>252.000 GiB</AppDirectCapacity>
+   <UnconfiguredCapacity>0.000 GiB</UnconfiguredCapacity>
+   <InaccessibleCapacity>0.454 GiB</InaccessibleCapacity>
+   <ReservedCapacity>0.000 GiB</ReservedCapacity>
+   <PackageSparingCapable>1</PackageSparingCapable>
+   <PackageSparingEnabled>1</PackageSparingEnabled>
+   <PackageSparesAvailable>1</PackageSparesAvailable>
+   <IsNew>0</IsNew>
+   <ViralPolicy>0</ViralPolicy>
+   <ViralState>0</ViralState>
+   <PeakPowerBudget>20000 mW</PeakPowerBudget>
+   <AvgPowerLimit>15000 mW</AvgPowerLimit>
+   <MaxAveragePowerLimit>18000 mW</MaxAveragePowerLimit>
+   <LatchedLastShutdownStatus>PM S5 Received, PMIC 12V/DDRT 1.2V Power Loss (PLI), Controller's FW State Flush Complete, Write Data Flush Complete, PM Idle Received, Extended Flush Not Complete</LatchedLastShutdownStatus>
+   <UnlatchedLastShutdownStatus>PMIC 12V/DDRT 1.2V Power Loss (PLI), PM Warm Reset Received, Controller's FW State Flush Complete, Write Data Flush Complete, PM Idle Received, Extended Flush Not Complete</UnlatchedLastShutdownStatus>
+   <ThermalThrottleLossPercent>N/A</ThermalThrottleLossPercent>
+   <LastShutdownTime>Mon Dec 27 17:43:55 UTC 2021</LastShutdownTime>
+   <ModesSupported>Memory Mode, App Direct</ModesSupported>
+   <SecurityCapabilities>Encryption, Erase</SecurityCapabilities>
+   <MasterPassphraseEnabled>0</MasterPassphraseEnabled>
+   <ConfigurationStatus>Valid</ConfigurationStatus>
+   <SKUViolation>0</SKUViolation>
+   <ARSStatus>Completed</ARSStatus>
+   <OverwriteStatus>Unknown</OverwriteStatus>
+   <AitDramEnabled>1</AitDramEnabled>
+   <BootStatus>Success</BootStatus>
+   <BootStatusRegister>0x00000004_981d00f0</BootStatusRegister>
+   <ErrorInjectionEnabled>0</ErrorInjectionEnabled>
+   <MediaTemperatureInjectionEnabled>0</MediaTemperatureInjectionEnabled>
+   <SoftwareTriggersEnabled>0</SoftwareTriggersEnabled>
+   <SoftwareTriggersEnabledDetails>None</SoftwareTriggersEnabledDetails>
+   <PoisonErrorInjectionsCounter>0</PoisonErrorInjectionsCounter>
+   <PoisonErrorClearCounter>0</PoisonErrorClearCounter>
+   <MediaTemperatureInjectionsCounter>0</MediaTemperatureInjectionsCounter>
+   <SoftwareTriggersCounter>0</SoftwareTriggersCounter>
+   <MaxControllerTemperature>80 C</MaxControllerTemperature>
+   <MaxMediaTemperature>78 C</MaxMediaTemperature>
+   <MixedSKU>0</MixedSKU>
+  </Dimm>
+ </DimmList>

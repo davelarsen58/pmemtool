@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #
 # PMEMTOOL (PMT) FSTAB Module
 # Copyright (C) David P Larsen

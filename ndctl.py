@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 #
 # PMTOOL NDCTL Python Module
 # Copyright (C) David P Larsen

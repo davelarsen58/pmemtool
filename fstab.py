@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # PMEMTOOL (PMT) FSTAB Module
 # Copyright (C) David P Larsen
@@ -23,14 +23,20 @@ if not os.getenv('SANDBOX'):
 else:
     SANDBOX = os.environ['SANDBOX']
     print('Enabling Sandbox at:', SANDBOX)
+    msg = "%s %s %s" % (get_linenumber(), ":Enabling Sandbox at:", SANDBOX, '')
+    msg = "%s %s %s" % (get_linenumber(), ":", '', '')
+    message(msg, 1)
 
 FSTAB = SANDBOX + DEFAULT_FSTAB_FILE
 DEVDIR = SANDBOX + DEFAULT_DEVDIR
 DEV_UUID = SANDBOX + DEFAULT_DEV_UUID_DIR
 
-if VERBOSE: print("FSTAB", FSTAB)
-if VERBOSE: print("DEVDIR", DEVDIR)
-if VERBOSE: print("DEV_UUID", DEV_UUID)
+# msg = "%s %s %s" % (get_linenumber(), ":FSTAB:", FSTAB, '')
+# message(msg, 1)
+# msg = "%s %s %s" % (get_linenumber(), ":DEVDIR:", DEVDIR, '')
+# message(msg, 1)
+# msg = "%s %s %s" % (get_linenumber(), ":DEV_UUID:", DEV_UUID, '')
+# message(msg, 1)
 
 def unit_test_result(name, status):
     print("%-30s %-10s" % (name, status))
@@ -42,7 +48,8 @@ def fs_uuid_to_path(uuid):
         Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
     """
     path = DEV_UUID
-    if DEBUG: print("    DEBUG: fs_uuid_to_path", uuid, path)
+    msg = "%s %s %s" % (get_linenumber(), ":fs_uuid_to_path: input->", uuid, '')
+    message(msg, D1)
 
 
     # strip 'UUID="..."'chars from input
@@ -51,6 +58,9 @@ def fs_uuid_to_path(uuid):
 
     # append UUID to path
     path = path + "/" + tmp2
+
+    msg = "%s %s %s" % (get_linenumber(), ":fs_uuid_to_path: returning->", path, '')
+    message(msg, D1)
 
     return path
 

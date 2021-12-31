@@ -1,9 +1,24 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 global VERBOSE
 VERBOSE = 0
 
 from inspect import currentframe, getframeinfo
+
+# Verbosity Constants
+V0 = 0  # Verbose Depth 0 AKA Quiet
+V1 = 1  # Verbose Depth 1
+V2 = 2  # Verbose Depth 2
+V3 = 3  # Verbose Depth 3
+V4 = 4  # Verbose Depth 4
+V5 = 5  # Verbose Depth 5
+
+# Debug Constants
+D1 = 11  # Debug Depth 1
+D2 = 12  # Debug Depth 2
+D3 = 13  # Debug Depth 3
+D4 = 14  # Debug Depth 4
+D5 = 15  # Debug Depth 5
 
 def get_linenumber():
     cf = currentframe()

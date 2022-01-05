@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
-global VERBOSE
-VERBOSE = 0
+VERBOSE = 15
 
 from inspect import currentframe, getframeinfo
 
@@ -14,6 +13,7 @@ V4 = 4  # Verbose Depth 4
 V5 = 5  # Verbose Depth 5
 
 # Debug Constants
+D0 = 10  # Debug Depth 0
 D1 = 11  # Debug Depth 1
 D2 = 12  # Debug Depth 2
 D3 = 13  # Debug Depth 3
@@ -27,49 +27,70 @@ def get_linenumber():
 def unit_test_result(name, status):
     print("%-30s %-10s" % (name, status))
 
-def message(message, indent=0, message_type='INFO:'):
+def message(message, level=0, message_type=''):
     """
-    emits messages when VERBOSE => 0, when indent => VERBOSE
-       indent controls the indentation as well as gates messages
+    emits messages when VERBOSE => 0, when level => VERBOSE
+       level controls the indentation as well as gates messages
        on verbosity level
-
           VERBOSE == False or Verbose == 0, yields not output
-
-          example: if VERBOSE == 3 and indent == 3, then message
+          example: if VERBOSE == 3 and level == 3, then message
           levels 0, 1, 2, and 3 are printed
-
     message_type prefixes message with string provided, with 'INFO'
     as default message type.  Note the trailing ':'
     """
     global VERBOSE
+    n_spaces = 0
 
-    if indent <= VERBOSE:
+    '''if message_type is blank, fill in defaults based upon verbosity constants'''
+    if not message_type:
+        # '''Verbose Range'''
+        if level > V0 and level <= V5:
+            message_type = 'V' + str(VERBOSE) + ':' + str(level) + ': '
+            n_spaces = level
+        # '''Debug Range'''
+        elif level > D0 and level <= D5:
+            message_type = 'D' + str(VERBOSE - 10) + ':' + str(level) + ': '
+            n_spaces = level - 10
+    else:
+        message_type = message_type + '_' + str(VERBOSE) + ':' + str(level) + ': '
+        n_spaces = VERBOSE
+
+    if level <= VERBOSE:
         spaces = ''
-        for i in range(indent):
+
+        for i in range(n_spaces):
             spaces = spaces + '  '
         print("%s%s%s" % (spaces, message_type, message))
 
 def unit_tests():
     status = False
 
-    line_number = get_linenumber()
-    msg = "%s%s" % (line_number, ": testing get_linenumber()")
-    message(msg)
+    global VERBOSE
+    VERBOSE = V0
 
-    line_number = get_linenumber()
-    msg = "%s%s" % (line_number, ": testing message indent")
-    for i in range(5):
-         message(msg, i)
+    # walk through each value for V0 ... D5
+    for v in range(D5):
+        print('v = ', v)
+        msg = "%s%s" % (get_linenumber(), ": testing get_linenumber()")
+        message(msg)
 
-    line_number = get_linenumber()
-    msg = "%s%s" % (line_number, ": testing message indent with DEBUG message type")
-    for i in range(5):
-        message(msg, i, "DEBUG:")
+        # i = 0
+        for i in range(VERBOSE):
+            msg = "%s%s" % (get_linenumber(), ": testing message level")
+            message(msg, i)
 
-    line_number = get_linenumber()
-    msg = "%s%s" % (line_number, ": testing message indent with empty message type")
-    for i in range(5):
-         message(msg, i, "")
+        # i = 0
+        for i in range(VERBOSE):
+            msg = "%s%s" % (get_linenumber(), ": testing message level with DEBUG message type")
+            message(msg, i, "Hello:")
+
+        # line_number = get_linenumber()
+        # i = 0
+        for i in range(VERBOSE):
+            msg = "%s%s" % (get_linenumber(), ": testing message level with empty message type")
+            message(msg, i, "")
+
+        VERBOSE = VERBOSE + 1
 
 
 

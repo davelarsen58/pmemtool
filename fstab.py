@@ -23,8 +23,7 @@ if not os.getenv('SANDBOX'):
 else:
     SANDBOX = os.environ['SANDBOX']
     print('Enabling Sandbox at:', SANDBOX)
-    msg = "%s %s %s" % (get_linenumber(), ":Enabling Sandbox at:", SANDBOX, '')
-    msg = "%s %s %s" % (get_linenumber(), ":", '', '')
+    msg = "%s %s %s %s" % (get_linenumber(), ":Enabling Sandbox at:", SANDBOX, '')
     message(msg, 1)
 
 FSTAB = SANDBOX + DEFAULT_FSTAB_FILE
@@ -48,8 +47,8 @@ def fs_uuid_to_path(uuid):
         Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
     """
     path = DEV_UUID
-    msg = "%s %s %s" % (get_linenumber(), ":fs_uuid_to_path: input->", uuid, '')
-    message(msg, D1)
+    msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_to_path: input->", uuid, '')
+    message(msg, 1)
 
 
     # strip 'UUID="..."'chars from input
@@ -59,8 +58,8 @@ def fs_uuid_to_path(uuid):
     # append UUID to path
     path = path + "/" + tmp2
 
-    msg = "%s %s %s" % (get_linenumber(), ":fs_uuid_to_path: returning->", path, '')
-    message(msg, D1)
+    msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_to_path: returning->", path, '')
+    message(msg, 1)
 
     return path
 
@@ -244,7 +243,9 @@ def parse_fstab(file_name=FSTAB):
                         'pm_ns_name': 'namespaceX.Y', \
                         'pm_ns_dev': block_dev, \
                         'pm_ns_type': 'fsdaX', \
-                        'dimms': 'dimms' \
+                        'dimms': 'dimms', \
+                        'mounted': 'T/F', \
+                        'size': 'NaN', \
                       }
 
     msg = "%s%s" % (get_linenumber(), " :End parse_fstab")
@@ -254,34 +255,40 @@ def parse_fstab(file_name=FSTAB):
 
 def print_fstab_table(fstab):
 
-    print("%-6s %-8s %-10s %-8s %-8s %-20s %20s" % ( \
-            'Health', \
-            'Region', \
-            'NS dev', \
-            'NS Type', \
-            'fs_type', \
-            'mount', \
-            'dimms'))
+    print("%-12s" % ( 'Mount Point'), end = ' ')
+    print("%-7s" % ( 'Mounted'), end = ' ')
+    print("%-9s" % ( 'NS Size'), end = ' ')
+    print("%-8s" % ( 'Health'), end = ' ')
+    print("%-10s" % ( 'Region'), end = ' ')
+    print("%-8s" % ( 'NS dev'), end = ' ')
+    print("%-8s" % ( 'NS Type'), end = ' ')
+    print("%-8s" % ( 'fs_type'), end = ' ')
+    print("%-20s" % ( 'PMEM Devices'), end = ' ')
+    print()
 
-    print("%-6s %-8s %-10s %-8s %-8s %-20s %20s" % (\
-            '------',
-            '-------',
-            '------',
-            '------',
-            '------',
-            '--------------------',
-            '--------------------'\
-            ))
+    print("%-12s" % ( '------------'), end=' ')
+    print("%-7s"  % ( '-------'), end=' ')
+    print("%9s"   % ( '---------'), end=' ')
+    print("%8s"   % ( '--------'), end=' ')
+    print("%-10s" % ( '----------'), end=' ')
+    print("%-8s"  % ( '--------'), end=' ')
+    print("%-8s"  % ( '--------'), end=' ')
+    print("%-8s"  % ( '--------'), end=' ')
+    print("%-20s"  % ( '--------------------------------------'), end=' ')
+    print()
+
     for k in fstab.keys():
-        print("%-6s %-8s %-10s %-8s %-8s %-20s %-20s" % ( \
-               fstab[k]['status'], \
-               fstab[k]['pm_region'], \
-               fstab[k]['pm_ns_dev'], \
-               fstab[k]['pm_ns_type'], \
-               fstab[k]['fs_type'], \
-               fstab[k]['mount'], \
-               fstab[k]['dimms'] \
-               ))
+        print("%-12s" % ( fstab[k]['mount']), end=' ')
+        print("%-7s"  % ( fstab[k]['mounted']), end=' ')
+        print("%-9s"   % ( str(fstab[k]['size']) + ' GiB'), end=' ')
+        print("%-8s"   % ( fstab[k]['status']), end=' ')
+        print("%-10s" % ( fstab[k]['pm_region']), end=' ')
+        print("%-8s"  % ( fstab[k]['pm_ns_dev']), end=' ')
+        print("%-8s"  % ( fstab[k]['pm_ns_type']), end=' ')
+        print("%-8s"  % ( fstab[k]['fs_type']), end=' ')
+        print("%-20s"  % ( fstab[k]['dimms']), end=' ')
+        print()
+
 
 def print_fs_mounts(fstab, status='ok', delimiter=';'):
     """
@@ -290,6 +297,14 @@ def print_fs_mounts(fstab, status='ok', delimiter=';'):
         if fstab[k]['status'] == status:
             print(fstab[k]['mount'], end=delimiter)
     print()
+
+def set_fs_mounted_state(fstab, dev, is_mounted):
+    if DEBUG: print("set_fs_status: dev:", dev, " status:", status)
+    fstab[dev]['mounted'] = bool(is_mounted)
+
+def set_ns_size(fstab, dev, size):
+    if DEBUG: print("set_fs_status: dev:", dev, " status:", status)
+    fstab[dev]['size'] = size
 
 def set_fs_status(fstab, dev, status='ok'):
     if DEBUG: print("set_fs_status: dev:", dev, " status:", status)

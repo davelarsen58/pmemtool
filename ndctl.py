@@ -283,13 +283,14 @@ def list_dimm_table():
     print()
     print("Optane Persistent Memory DIMM Status")
     print()
-    print("%-8s %-6s %-6s %-6s %-6s" % ("Linux", "DIMM", "DIMM", "Cntrl", "Remaining") )
-    print("%-8s %-6s %-6s %-6s %-6s" % ("Device", "Health", "Temp", "Temp", "Life") )
-    print("%-8s %-6s %-6s %-6s %-6s" % ("------", "------", "------", "------", "----") )
+    print("%-7s %-21s %-6s %-6s %-6s %-6s" % ("Linux", "DIMM", "DIMM", "DIMM", "Cntrl", "Remaining") )
+    print("%-7s %-21s %-6s %-6s %-6s %-6s" % ("Device", "UID", "Health", "Temp", "Temp", "Life") )
+    print("%-7s %-21s %-6s %-6s %-6s %-6s" % ("-------", "--------------------", "------", "------", "------", "----") )
 
     for x in range(len(ndctl['dimms'])):
-        print("%-8s %-6s %-6s %-6s %-6s" % (
+        print("%-7s %-21s %6s %-6s %-6s %-6s" % (
                 ndctl['dimms'][x]['dev'], \
+                ndctl['dimms'][x]['id'], \
                 ndctl['dimms'][x]['health']['health_state'], \
                 ndctl['dimms'][x]['health']['temperature_celsius'], \
                 ndctl['dimms'][x]['health']['controller_temperature_celsius'], \

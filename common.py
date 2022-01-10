@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-VERBOSE = 15
+VERBOSE = 0
 
 from inspect import currentframe, getframeinfo
 
@@ -61,6 +61,11 @@ def message(message, level=0, message_type=''):
         for i in range(n_spaces):
             spaces = spaces + '  '
         print("%s%s%s" % (spaces, message_type, message))
+
+def pretty_print(d):
+    import pprint
+    pp = pprint.PrettyPrinter(indent=2)
+    pp.pprint(d)
 
 def unit_tests():
     status = False

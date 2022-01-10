@@ -1,0 +1,16 @@
+/dev/pmem0 /pmem0 xfs dax 0 0
+/dev/pmem1 /pmem1 xfs dax 0 0
+/dev/pmem2 /pmem2 xfs dax 0 0
+/dev/pmem3 /pmem3 xfs dax 0 0
+/dev/pmem4 /pmem4 xfs dax 0 0
+/dev/pmem5 /pmem5 xfs dax 0 0
+/dev/pmem6 /pmem6 xfs dax 0 0
+/dev/pmem7 /pmem7 xfs dax 0 0
+/dev/pmem8 /pmem8 xfs dax 0 0
+/dev/pmem9 /pmem9 xfs dax 0 0
+/dev/pmem10 /pmem10 xfs dax 0 0
+/dev/pmem11 /pmem11 xfs dax 0 0
+/dev/pmem12 /pmem12 xfs dax 0 0
+/dev/pmem13 /pmem13 xfs dax 0 0
+/dev/pmem14 /pmem14 xfs dax 0 0
+/dev/pmem15 /pmem15 xfs dax 0 0

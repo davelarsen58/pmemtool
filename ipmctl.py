@@ -1,9 +1,9 @@
-#!/usr/bin/python3
+# #!/usr/bin/python3
 
 import xml.etree.ElementTree as ET
 import sys
 import os
-from common import message, get_linenumber
+from common import message, get_linenumber, pretty_print
 from common import VERBOSE, V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
 
 '''
@@ -30,8 +30,6 @@ show_region_cmd = 'ipmctl show -o nvmxml -a -region'
 show_socket_cmd = 'ipmctl show -o nvmxml -a -socket'
 show_sensor_cmd = 'ipmctl_show -o nvmxml -a -sensor'
 show_topology_cmd = 'ipmctl show -o nvmxml -a -topology'
-
-
 '''Files to send XML to'''
 dimm_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-dimm.xml'
 region_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-region.xml'
@@ -100,8 +98,8 @@ white_list['ViralState'] = 0 #   ViralState :  0
 white_list['PeakPowerBudget'] = 0 #   PeakPowerBudget :  20000 mW
 white_list['AvgPowerLimit'] = 0 #   AvgPowerLimit :  15000 mW
 white_list['MaxAveragePowerLimit'] = 0 #   MaxAveragePowerLimit :  18000 mW
-white_list['LatchedLastShutdownStatus'] = 0 #   LatchedLastShutdownStatus :  PM S5 Received, PMIC 12V/DDRT 1.2V Power Loss (PLI), Controller's FW State Flush Complete, Write Data Flush Complete, PM Idle Received, Extended Flush Not Complete
-white_list['UnlatchedLastShutdownStatus'] = 0 #   UnlatchedLastShutdownStatus :  PMIC 12V/DDRT 1.2V Power Loss (PLI), PM Warm Reset Received, Controller's FW State Flush Complete, Write Data Flush Complete, PM Idle Received, Extended Flush Not Complete
+white_list['LatchedLastShutdownStatus'] = 0 #   LatchedLastShutdownStatus :  PM S5 Received, PMIC 12V/DDRT 1.2V Power Loss (PLI) ...
+white_list['UnlatchedLastShutdownStatus'] = 0 #   UnlatchedLastShutdownStatus :  PMIC 12V/DDRT 1.2V Power Loss (PLI) ...
 white_list['ThermalThrottleLossPercent'] = 0 #   ThermalThrottleLossPercent :  N/A
 white_list['LastShutdownTime'] = 0 #   LastShutdownTime :  Mon Dec 27 17:43:55 UTC 2021
 white_list['ModesSupported'] = 0 #   ModesSupported :  Memory Mode, App Direct
@@ -145,14 +143,14 @@ white_list['SerialNumber'] = 1 # 'SerialNumber': '0x00002c4b'
 white_list['PartNumber'] = 1 # 'PartNumber': 'NMA1XBD256GQS'
 
 
-def show_dimm(xml_file, show_dimm_cmd):
+def show_dimm(xml_file = dimm_xml_file, command = show_dimm_cmd):
     '''executes show dimm cmd string, sending output to xml_file'''
     status = False
 
-    msg = "%s %s %s %s" % (get_linenumber(), ":show_dimm():", xml_file, show_dimm_cmd)
+    msg = "%s %s %s %s" % (get_linenumber(), ":show_dimm():", xml_file, command)
     message(msg, D1)
     #
-    cmd = show_dimm_cmd + ' > ' + xml_file
+    cmd = command + ' > ' + xml_file
     ret_val = os.system(cmd)
     if ret_val == 0:
         status = True
@@ -162,7 +160,7 @@ def show_dimm(xml_file, show_dimm_cmd):
 
     return status
 
-def parse_dimms(xml_file):
+def parse_dimms(xml_file = dimm_xml_file):
     '''
     parses output of show -a -dimm command
     returns dimms dict with data from xml file
@@ -219,17 +217,17 @@ def parse_dimms(xml_file):
 
     return dimms
 
-def show_region(xml_file, show_region_cmd):
+def show_region(xml_file = region_xml_file, command = show_region_cmd):
     '''
     runs show dimm cmd string, sending output to xml_file
     returns True if sucessful
     '''
     status = False
 
-    msg = "%s %s %s %s" % (get_linenumber(), ":show_region():", xml_file, show_region_cmd)
+    msg = "%s %s %s %s" % (get_linenumber(), ":show_region():", xml_file, command)
     message(msg, D1)
     #
-    cmd = show_region_cmd + ' > ' + xml_file
+    cmd = command + ' > ' + xml_file
     ret_val = os.system(cmd)
     if ret_val == 0:
         status = True
@@ -239,7 +237,7 @@ def show_region(xml_file, show_region_cmd):
 
     return status
 
-def parse_regions(xml_file):
+def parse_regions(xml_file = region_xml_file):
     '''
     parses output of show -a -regions command
     returns regions dict with data from xml file
@@ -282,10 +280,64 @@ def parse_regions(xml_file):
 
     return regions
 
-def pp_dict(d):
-    import pprint
-    pp = pprint.PrettyPrinter(indent=2)
-    pp.pprint(d)
+def list_dimms(dimms):
+    '''print a list of dimms'''
+
+    '''Table Header'''
+    print('%-21s' % 'PMEM DIMM UUID', end="  ")
+    print('%-6s' %  'DIMMID', end="  ")
+    print('%-11s' % 'Capacity', end="  ")
+    print('%-4s' %  'Skt', end="  ")
+    print('%-4s' %  'iMC', end="  ")
+    print('%-4s' %  'Chan', end="  ")
+    print('%-4s' %  'Slot', end="  ")
+    print('%-20s' % 'Device Locator', end="  ")
+    print()
+    print('%-21s' % '---------------------', end="  ")
+    print('%-6s' %  '------', end="  ")
+    print('%-11s' % '-----------', end="  ")
+    print('%4s' %  '----', end="  ")
+    print('%4s' %  '----', end="  ")
+    print('%4s' %  '----', end="  ")
+    print('%4s' %  '----', end="  ")
+    print('%-20s' % '--------------------', end="  ")
+    print()
+    for key in sorted(dimms.keys()):
+        print('%-21s' % (dimms[key]['DimmUID']), end="  ")
+        print('%-6s' % (dimms[key]['DimmID']), end="  ")
+        print('%-11s' % (dimms[key]['Capacity']), end="  ")
+        print('%-4d' % (int(dimms[key]['SocketID'], 16)), end="  ")
+        print('%-4d' % (int(dimms[key]['MemControllerID'], 16)), end="  ")
+        print('%-4d' % (int(dimms[key]['ChannelID'], 16)), end="  ")
+        print('%-4d' % (int(dimms[key]['ChannelPos'], 16)), end="  ")
+        print('%-20s' % (dimms[key]['DeviceLocator']), end="  ")
+        print()
+    print()
+
+def get_dimm_list(dimms, filter = 'DimmNumber_'):
+    '''
+    returns dict of DIMM's with attributes for specified filter 
+
+    dimms is a dict of dicts describing each DIMM's attributes
+    several keys are used to enable looking up DIMM attributes with different methods
+    depending on need
+    dict indexes look like this
+        DimmNumber_*    example: DimmNumber_0
+        DimmID_*        example: DimmID_0x001
+        DimmUID_*       example: DimmUID_8089-a2-1836-00002c4b
+        DeviceLocator_* example: DeviceLocator_CPU1_DIMM_A2
+    '''
+
+    tmp = {}
+    for key in sorted(dimms.keys()):
+        if key.startswith(filter):
+            tmp[key] = dimms[key]
+
+    return tmp
+
+
+def list_regions(regions):
+    '''prints list of regions with index keys'''
 
 def main():
 
@@ -333,11 +385,14 @@ def main():
 
     print('Verbosity:', VERBOSE)
 
-    message('pp_dict dimms',D0)
-    pp_dict(dimms)
+    short_dimms = get_dimm_list(dimms)
+    list_dimms(short_dimms)
 
-    message('pp_dict regions',D0)
-    pp_dict(regions)
+    # message('pp_dict dimms',D0)
+    # pretty_print(dimms)
+
+    # message('pp_dict regions',D0)
+    # pretty_print(regions)
 
 if __name__ == '__main__':
     main()

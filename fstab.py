@@ -24,18 +24,12 @@ else:
     SANDBOX = os.environ['SANDBOX']
     print('Enabling Sandbox at:', SANDBOX)
     msg = "%s %s %s %s" % (get_linenumber(), ":Enabling Sandbox at:", SANDBOX, '')
-    message(msg, 1)
+    message(msg, D1)
 
 FSTAB = SANDBOX + DEFAULT_FSTAB_FILE
 DEVDIR = SANDBOX + DEFAULT_DEVDIR
 DEV_UUID = SANDBOX + DEFAULT_DEV_UUID_DIR
 
-# msg = "%s %s %s" % (get_linenumber(), ":FSTAB:", FSTAB, '')
-# message(msg, 1)
-# msg = "%s %s %s" % (get_linenumber(), ":DEVDIR:", DEVDIR, '')
-# message(msg, 1)
-# msg = "%s %s %s" % (get_linenumber(), ":DEV_UUID:", DEV_UUID, '')
-# message(msg, 1)
 
 def unit_test_result(name, status):
     print("%-30s %-10s" % (name, status))
@@ -48,7 +42,7 @@ def fs_uuid_to_path(uuid):
     """
     path = DEV_UUID
     msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_to_path: input->", uuid, '')
-    message(msg, 1)
+    message(msg, D1)
 
 
     # strip 'UUID="..."'chars from input
@@ -59,7 +53,7 @@ def fs_uuid_to_path(uuid):
     path = path + "/" + tmp2
 
     msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_to_path: returning->", path, '')
-    message(msg, 1)
+    message(msg, D1)
 
     return path
 
@@ -158,7 +152,7 @@ def parse_fstab(file_name=FSTAB):
 
 
     msg = "%s %s %s" % (get_linenumber(), ":Beginning parse_fstab", file_name)
-    message(msg, 1)
+    message(msg, D1)
 
     with open(file_name, "r") as f:
         for line in f:
@@ -249,7 +243,7 @@ def parse_fstab(file_name=FSTAB):
                       }
 
     msg = "%s%s" % (get_linenumber(), " :End parse_fstab")
-    message(msg, 1)
+    message(msg, D1)
 
     return fstab
 

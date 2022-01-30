@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
-VERBOSE = 0
+VERSION = '0.90.0'
 
+import os
 from inspect import currentframe, getframeinfo
 
 # Verbosity Constants
@@ -19,6 +20,8 @@ D2 = 12  # Debug Depth 2
 D3 = 13  # Debug Depth 3
 D4 = 14  # Debug Depth 4
 D5 = 15  # Debug Depth 5
+
+VERBOSE = 0
 
 def get_linenumber():
     cf = currentframe()
@@ -41,21 +44,23 @@ def message(message, level=0, message_type=''):
     global VERBOSE
     n_spaces = 0
 
+    my_VERBOSE = int(VERBOSE)
+
     '''if message_type is blank, fill in defaults based upon verbosity constants'''
     if not message_type:
         # '''Verbose Range'''
         if level > V0 and level <= V5:
-            message_type = 'V' + str(VERBOSE) + ':' + str(level) + ': '
+            message_type = 'V' + str(my_VERBOSE) + ':' + str(level) + ': '
             n_spaces = level
         # '''Debug Range'''
         elif level > D0 and level <= D5:
-            message_type = 'D' + str(VERBOSE - 10) + ':' + str(level) + ': '
+            message_type = 'D' + str(my_VERBOSE - 10) + ':' + str(level) + ': '
             n_spaces = level - 10
     else:
-        message_type = message_type + '_' + str(VERBOSE) + ':' + str(level) + ': '
-        n_spaces = VERBOSE
+        message_type = message_type + '_' + str(my_VERBOSE) + ':' + str(level) + ': '
+        n_spaces = my_VERBOSE
 
-    if level <= VERBOSE:
+    if level <= my_VERBOSE:
         spaces = ''
 
         for i in range(n_spaces):
@@ -66,6 +71,19 @@ def pretty_print(d):
     import pprint
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(d)
+
+def version():
+    return VERSION
+
+def check_user_is_root():
+    status = False
+    uid = os.getuid()
+    if uid == 0:
+        status = True
+    else:
+        print("You must either SUDO or be root to run this script")
+        print("Your User ID:", uid)
+    return bool(status)
 
 def unit_tests():
     status = False

@@ -1,13 +1,13 @@
-# #!/usr/bin/python3
+#!/usr/bin/python3
 
 import xml.etree.ElementTree as ET
 import sys
 import os
 from common import message, get_linenumber, pretty_print
-from common import VERBOSE, V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
+from common import V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
+import common as c
 
-'''
-'''
+VERBOSE = c.VERBOSE
 
 tmp_dir = '/tmp'
 
@@ -33,8 +33,8 @@ show_topology_cmd = 'ipmctl show -o nvmxml -a -topology'
 '''Files to send XML to'''
 dimm_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-dimm.xml'
 region_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-region.xml'
-sensor_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-socket.xml'
-socket_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-sensor.xml'
+socket_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-socket.xml'
+sensor_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-sensor.xml'
 topology_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-topology.xml'
 
 '''
@@ -127,6 +127,8 @@ white_list['MixedSKU'] = 0 #   MixedSKU :  0
 '''Here are the keys we care about'''
 white_list['Capacity'] = 1 # 'Capacity': '252.454 GiB'
 white_list['DimmUID'] = 1 # 'DimmUID': '8089-a2-1836-00002c4b'
+white_list['HealthState'] = 1 #   HealthState :  Healthy
+white_list['HealthStateReason'] = 1 #   HealthStateReason :  None
 white_list['NmemID'] = 1 # 'NmemID': 'nmem0'
 white_list['DimmID'] = 1 # 'DimmID': '0x0001'
 white_list['FWVersion'] = 1 # 'FWVersion': '01.02.00.5446'
@@ -143,10 +145,56 @@ white_list['SerialNumber'] = 1 # 'SerialNumber': '0x00002c4b'
 white_list['PartNumber'] = 1 # 'PartNumber': 'NMA1XBD256GQS'
 
 
+def show_socket(xml_file = socket_xml_file, command = show_socket_cmd):
+    '''executes show socket cmd string, sending output to xml_file'''
+    status = False
+    #
+    msg = "%s %s %s %s" % (get_linenumber(), ":show_socket():", xml_file, command)
+    message(msg, D1)
+    #
+    cmd = command + ' > ' + xml_file
+    ret_val = os.system(cmd)
+    if ret_val == 0:
+        status = True
+    #
+    msg = "%s %s %s %s" % (get_linenumber(), ":show_socket():", 'returned', ret_val)
+    message(msg, D1)
+    #
+    return status
+
+def parse_socket(xml_file = socket_xml_file):
+    '''
+    parses output of show -a -socket command
+    returns socket dict with data from xml file
+    '''
+    sockets = {}
+    #
+    msg = "%s %s %s %s" % (get_linenumber(), ":parse_socket:", xml_file, 'Beginning')
+    message(msg, D3)
+    #
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    #
+    msg = "%s %s %s %s" % (get_linenumber(), ":parse_socket:", xml_file, 'ET.parse Complete')
+    message(msg, D3)
+
+    for socket in range( len(root)):
+        tmp = {}
+        for socket_attr in range(len(root[socket])):
+            msg = "%s %s %s %s" % (get_linenumber(), "for socket_attr in range", root[socket][socket_attr].tag, root[socket][socket_attr].text)
+            message(msg, D4)
+            tmp[root[socket][socket_attr].tag] = root[socket][socket_attr].text
+
+        socket_id = 'SocketID_{}'.format(tmp['SocketID'])
+
+        sockets[socket_id] = tmp
+
+    return sockets
+
 def show_dimm(xml_file = dimm_xml_file, command = show_dimm_cmd):
     '''executes show dimm cmd string, sending output to xml_file'''
     status = False
-
+    #
     msg = "%s %s %s %s" % (get_linenumber(), ":show_dimm():", xml_file, command)
     message(msg, D1)
     #
@@ -157,33 +205,31 @@ def show_dimm(xml_file = dimm_xml_file, command = show_dimm_cmd):
     #
     msg = "%s %s %s %s" % (get_linenumber(), ":show_dimm():", 'returned', ret_val)
     message(msg, D1)
-
+    #
     return status
 
-def parse_dimms(xml_file = dimm_xml_file):
+def parse_dimm(xml_file = dimm_xml_file):
     '''
     parses output of show -a -dimm command
     returns dimms dict with data from xml file
     see white_list for fields of interest
     '''
     dimms = {}
-
+    #
     msg = "%s %s %s %s" % (get_linenumber(), ":parse_dimms:", xml_file, 'Beginning')
     message(msg, D3)
-
+    #
     tree = ET.parse(xml_file)
     root = tree.getroot()
-
+    #
     msg = "%s %s %s %s" % (get_linenumber(), ":parse_dimms:", xml_file, 'ET.parse Complete')
     message(msg, D3)
-
+    #
     dimms = {}
-
+    #
     for dimm in range( len(root)):
         tmp = {}
         for dimm_attr in range(len(root[dimm])):
-
-            # if key is in white_list
             if white_list[root[dimm][dimm_attr].tag] == 1:
                 msg = "%s %s %s %s" % (get_linenumber(), "for dimm_attr in range", root[dimm][dimm_attr].tag, root[dimm][dimm_attr].text)
                 message(msg, D4)
@@ -196,24 +242,24 @@ def parse_dimms(xml_file = dimm_xml_file):
         dimm_id = 'DimmID_{}'.format(tmp['DimmID'])
         dimm_uid = 'DimmUID_{}'.format(tmp['DimmUID'])
         dimm_locator = 'DeviceLocator_{}'.format(tmp['DeviceLocator'])
-
+        #
         dimms[dimm_number] = tmp     # search by .startswith('DimmNumber_')
         msg = "%s %s %s %s" % (get_linenumber(), "... Indexing", dimm_number, '')
         message(msg, D3)
-
+        #
         dimms[dimm_id] = tmp         # search by .startswith('0x')
         msg = "%s %s %s %s" % (get_linenumber(), "... Indexing", dimm_id, '')
         message(msg, D3)
-
+        #
         dimms[dimm_uid] = tmp       # search by .startswith('8089')
         msg = "%s %s %s %s" % (get_linenumber(), "... Indexing", dimm_uid, '')
         message(msg, D3)
-
+        #
         dimms[dimm_locator] = tmp    # OEM specific on naming, but provides physical & logical correlation
         msg = "%s %s %s %s" % (get_linenumber(), "... Indexing", dimm_locator, '')
         message(msg, D3)
 
-    print("%s %s %s %s" % (get_linenumber(), ":parse_dimms:", xml_file, 'End'))
+    # print("%s %s %s %s" % (get_linenumber(), ":parse_dimms:", xml_file, 'End'))
 
     return dimms
 
@@ -237,12 +283,12 @@ def show_region(xml_file = region_xml_file, command = show_region_cmd):
 
     return status
 
-def parse_regions(xml_file = region_xml_file):
+def parse_region(xml_file = region_xml_file):
     '''
     parses output of show -a -regions command
     returns regions dict with data from xml file
     '''
-    msg = "%s %s %s %s" % (get_linenumber(), "parse_regions: Parse Beginning:", xml_file, '')
+    msg = "%s %s %s %s" % (get_linenumber(), "parse_region: Parse Beginning:", xml_file, '')
     message(msg, D1)
     regions = {}
 
@@ -260,7 +306,7 @@ def parse_regions(xml_file = region_xml_file):
         creating multiple indexes for accessing different ways
         expicitly indexing for clarity
         '''
-        region_socket_id = 'SocketID_{}'.format(region)
+        region_socket_id = 'SocketID_{}'.format(tmp['SocketID'])
         msg = "%s %s %s %s" % (get_linenumber(), "... Indexing", region_socket_id, '')
         message(msg, D2)
         regions[region_socket_id] = tmp
@@ -275,7 +321,7 @@ def parse_regions(xml_file = region_xml_file):
         message(msg, D2)
         regions[region_iset_id] = tmp
 
-    msg = "%s %s %s %s" % (get_linenumber(), "parse_regions: Parse Complete:", xml_file, '')
+    msg = "%s %s %s %s" % (get_linenumber(), "parse_region: Parse Complete:", xml_file, '')
     message(msg, D1)
 
     return regions
@@ -284,37 +330,45 @@ def list_dimms(dimms):
     '''print a list of dimms'''
 
     '''Table Header'''
-    print('%-21s' % 'PMEM DIMM UUID', end="  ")
     print('%-6s' %  'DIMMID', end="  ")
+    print('%-15s' %  'Health State', end="  ")
+    print('%-21s' % 'PMEM DIMM UUID', end="  ")
     print('%-11s' % 'Capacity', end="  ")
     print('%-4s' %  'Skt', end="  ")
     print('%-4s' %  'iMC', end="  ")
     print('%-4s' %  'Chan', end="  ")
     print('%-4s' %  'Slot', end="  ")
+    print('%-14s' %  'FW Version', end="  ")
     print('%-20s' % 'Device Locator', end="  ")
     print()
-    print('%-21s' % '---------------------', end="  ")
+    #
     print('%-6s' %  '------', end="  ")
+    print('%-15s' %  '---------------', end="  ")
+    print('%-21s' % '---------------------', end="  ")
     print('%-11s' % '-----------', end="  ")
     print('%4s' %  '----', end="  ")
     print('%4s' %  '----', end="  ")
     print('%4s' %  '----', end="  ")
     print('%4s' %  '----', end="  ")
+    print('%14s' %  '--------------', end="  ")
     print('%-20s' % '--------------------', end="  ")
     print()
+    #
     for key in sorted(dimms.keys()):
-        print('%-21s' % (dimms[key]['DimmUID']), end="  ")
         print('%-6s' % (dimms[key]['DimmID']), end="  ")
+        print('%-15s' % (dimms[key]['HealthState']), end="  ")
+        print('%-21s' % (dimms[key]['DimmUID']), end="  ")
         print('%-11s' % (dimms[key]['Capacity']), end="  ")
         print('%-4d' % (int(dimms[key]['SocketID'], 16)), end="  ")
         print('%-4d' % (int(dimms[key]['MemControllerID'], 16)), end="  ")
         print('%-4d' % (int(dimms[key]['ChannelID'], 16)), end="  ")
         print('%-4d' % (int(dimms[key]['ChannelPos'], 16)), end="  ")
+        print('%-14s' % (dimms[key]['FWVersion']), end="  ")
         print('%-20s' % (dimms[key]['DeviceLocator']), end="  ")
         print()
     print()
 
-def get_dimm_list(dimms, filter = 'DimmNumber_'):
+def get_dimms(filter = 'DimmNumber_'):
     '''
     returns dict of DIMM's with attributes for specified filter 
 
@@ -328,16 +382,71 @@ def get_dimm_list(dimms, filter = 'DimmNumber_'):
         DeviceLocator_* example: DeviceLocator_CPU1_DIMM_A2
     '''
 
+    if show_dimm():
+        d = parse_dimm()
+
     tmp = {}
-    for key in sorted(dimms.keys()):
+    for key in sorted(d.keys()):
         if key.startswith(filter):
-            tmp[key] = dimms[key]
+            tmp[key] = d[key]
+    return tmp
+
+def get_dimm_list(socket_num):
+    '''returns list of DimmID's '''
+    my_list = []
+
+    my_filter = 'DimmID_0x' + str(socket_num)
+    my_dict = get_dimms(my_filter)
+    for i in sorted(my_dict.keys()):
+        my_list.append(my_dict[i]['DimmID'])
+
+    return my_list
+
+
+def get_socket(filter = 'SocketID_'):
+    '''Returns list of sockets with attributes'''
+
+    if show_socket():
+        s = parse_socket()
+
+    tmp = {}
+    for key in sorted(s.keys()):
+        if key.startswith(filter):
+            tmp[key] = s[key]
 
     return tmp
 
+def get_socket_list():
+    '''returns list of SocketID's '''
+    my_list = []
+    my_dict = get_socket()
+    for i in sorted(my_dict.keys()):
+        my_list.append(my_dict[i]['SocketID'])
+    return my_list
 
-def list_regions(regions):
-    '''prints list of regions with index keys'''
+def get_region(filter = 'RegionID'):
+    '''Returns list of regions with index keys'''
+
+    if show_region():
+        r = parse_region()
+
+    tmp = {}
+
+    for i in sorted(r.keys()):
+        if i.startswith(filter):
+            tmp[i] = r[i]
+
+    return tmp
+
+def get_region_list():
+    '''returns list of RegionID's '''
+    my_list = []
+    my_dict = get_region()
+
+    for i in sorted(my_dict.keys()):
+        my_list.append(my_dict[i]['RegionID'])
+
+    return my_list
 
 def main():
 
@@ -353,46 +462,83 @@ def main():
     global white_list
 
     ap = argparse.ArgumentParser()
-    ap.add_argument("--dimm_xml_file", required=False, help="NVMXML input file from ipmctl show -o nvmxml show -a -dimm")
-    ap.add_argument("--region_xml_file", required=False, help="NVMXML input file from ipmctl show -o nvmxml show -a -region")
+    # ap.add_argument("--dimm_xml_file", required=False, help="NVMXML input file from ipmctl show -o nvmxml show -a -dimm")
+    # ap.add_argument("--region_xml_file", required=False, help="NVMXML input file from ipmctl show -o nvmxml show -a -region")
     ap.add_argument("--verbose", required=False, help="verbosity level ... verbose depths:1..5, debug depths:10..15")
 
     args = vars(ap.parse_args())
 
-    if args['dimm_xml_file']:  dimm_xml_file = args['dimm_xml_file']
-    if args['region_xml_file']:  region_xml_file = args['region_xml_file']
+    # if args['dimm_xml_file']:  dimm_xml_file = args['dimm_xml_file']
+    # if args['region_xml_file']:  region_xml_file = args['region_xml_file']
     if args['verbose']:  VERBOSE = args['verbose']
 
     msg = "%s %s %s %s" % (get_linenumber(), "Main:Begin:", '', '')
-    message(msg, D0)
+    message(msg, V0)
 
-    if not dimm_xml_file or not region_xml_file:
-        sys.exit(1)
+    # if not dimm_xml_file or not region_xml_file:
+        # sys.exit(1)
 
+    '''DIMM Related Functions'''
     msg = "%s %s %s %s" % (get_linenumber(), "Main: calling show_dimm:", dimm_xml_file, '')
-    message(msg, D0)
+    message(msg, V0)
     if show_dimm(dimm_xml_file, show_dimm_cmd):
         msg = "%s %s %s %s" % (get_linenumber(), "Main: calling parse_dimms:", dimm_xml_file, '')
-        message(msg, D1)
-        dimms = parse_dimms(dimm_xml_file)
+        message(msg, V0)
+        dimms = parse_dimm()
 
-    msg = "%s %s %s %s" % (get_linenumber(), "Main: calling show_region:", region_xml_file, '')
-    message(msg, D0)
-    if show_region(region_xml_file, show_region_cmd):
-        msg = "%s %s %s %s" % (get_linenumber(), "Main: calling parse_regions:", region_xml_file, '')
-        message(msg, D1)
-        regions = parse_regions(region_xml_file)
+        short_dimms = get_dimms()
+        list_dimms(short_dimms)
+
+
+    '''Socket Related Functions'''
+    msg = "%s %s %s %s" % (get_linenumber(), "Main: calling show_socket:", socket_xml_file, '')
+    message(msg, V0)
+    if show_socket(socket_xml_file, show_socket_cmd):
+        msg = "%s %s %s %s" % (get_linenumber(), "Main: calling parse_socket:", socket_xml_file, '')
+        message(msg, V0)
+        socket = parse_socket(socket_xml_file)
+        #
+        message('pp_dict socket',V0)
+        pretty_print(socket)
 
     print('Verbosity:', VERBOSE)
 
-    short_dimms = get_dimm_list(dimms)
-    list_dimms(short_dimms)
+    msg = "%s %s %s %s" % (get_linenumber(), "Main: calling get_dimm_list():", '', '')
+    message(msg, V0)
+    d = get_dimm_list()
+    pretty_print(d)
 
-    # message('pp_dict dimms',D0)
-    # pretty_print(dimms)
+    msg = "%s %s %s %s" % (get_linenumber(), "Main: calling get_socket_list():", '', '')
+    message(msg, V0)
+    d = get_socket_list()
+    pretty_print(d)
 
-    # message('pp_dict regions',D0)
-    # pretty_print(regions)
+    msg = "%s %s %s %s" % (get_linenumber(), "Main: calling get_region_list():", '', '')
+    message(msg, V0)
+    d = get_region_list()
+    pretty_print(d)
+
+
+    '''Region Related Functions'''
+    msg = "%s %s %s %s" % (get_linenumber(), "Main: calling show_region:", region_xml_file, '')
+    message(msg, V0)
+    if show_region(region_xml_file, show_region_cmd):
+        msg = "%s %s %s %s" % (get_linenumber(), "Main: calling parse_region:", region_xml_file, '')
+        message(msg, V0)
+        regions = parse_region(region_xml_file)
+        #
+        message('pp_dict regions',V0)
+        pretty_print(regions)
+
+        message('calling get_region()', V0)
+        r = get_region()
+        message('PP regions',V0)
+        pretty_print(r)
+
+        message('calling get_region_list()', V0)
+        r = get_region_list()
+        message('PP region list',V0)
+        pretty_print(r)
 
 if __name__ == '__main__':
     main()

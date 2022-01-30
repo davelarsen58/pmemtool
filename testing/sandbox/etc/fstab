@@ -1,0 +1,58 @@
+UUID=83e13e5b-ba48-4e68-b357-2b20e93831e9 / xfs defaults 1 1
+UUID=DBAB-5F5D /boot/efi vfat defaults 0 0
+LABEL=SWAP swap swap defaults 0 0
+/dev/mapper/3600a0980383047592d244d506a526654 /var/crash xfs defaults 0 0
+
+10.22.54.42:/hana_data_uew_mnt00005_t050_vol                /hana/data/UEW/mnt00001  nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.54.31:/hana_data_uew_mnt00006_t050_vol                /hana/data/UEW/mnt00002  nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.55.34:/hana_log_uew_mnt00005_t050_vol                 /hana/log/UEW/mnt00001   nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.55.37:/hana_log_uew_mnt00006_t050_vol                 /hana/log/UEW/mnt00002   nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.31:/hana_log_backups_uew_mnt00005_t050_vol         /hana/logbackups/UEW     nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.40:/hana_shared_uew_mnt00005_t50_vol/shared        /hana/shared/UEW         nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.40:/hana_shared_uew_mnt00005_t50_vol/usr_sap_node5 /usr/sap/UEW             nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.54.38:/hana_data2_uew_mnt00005_t050_vol               /hana/data2/UEW/mnt00001 nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.54.40:/hana_data2_uew_mnt00006_t050_vol               /hana/data2/UEW/mnt00002 nfs rw,hard,timeo=600,vers=4.1,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+
+#10.22.51.33:/hana_data_uew_mnt00005_t050_vol /hana/data/UEW/mnt00001 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.31:/hana_data_uew_mnt00006_t050_vol /hana/data/UEW/mnt00002 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.34:/hana_log_uew_mnt00005_t050_vol /hana/log/UEW/mnt00001 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.32:/hana_log_uew_mnt00006_t050_vol /hana/log/UEW/mnt00002 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.54.35:/hana_log_backups_uew_mnt00005_t050_vol /hana/logbackups/UEW nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.34:/hana_shared_uew_mnt00005_t50_vol/shared /hana/shared/UEW nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.34:/hana_shared_uew_mnt00005_t50_vol/usr_sap_node5 /usr/sap/UEW nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.38:/hana_data2_uew_mnt00005_t050_vol                /hana/data2/UEW/mnt00001                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.40:/hana_data2_uew_mnt00006_t050_vol                /hana/data2/UEW/mnt00002                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.31:/hana_data3_uew_mnt00005_t050_vol                /hana/data3/UEW/mnt00001                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.41:/hana_data3_uew_mnt00006_t050_vol                /hana/data3/UEW/mnt00002                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.35:/hana_data4_uew_mnt00005_t050_vol                /hana/data4/UEW/mnt00001                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+#10.22.51.42:/hana_data4_uew_mnt00006_t050_vol                /hana/data4/UEW/mnt00002                    nfs             rw,hard,nosuid,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+##Created tmpfs for HANA DB Requirement##
+##PEW Mount##
+10.22.51.31:/hana_data_pew_mnt00005_t050_vol          /hana/data/PEW/mnt00001  nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.31:/hana_log_pew_mnt00005_t050_vol           /hana/log/PEW/mnt00001   nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.31:/hana_data_pew_mnt00006_t050_vol          /hana/data/PEW/mnt00002  nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.31:/hana_log_pew_mnt00006_t050_vol           /hana/log/PEW/mnt00002   nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.32:/hana_shared_pew_t050_vol05/shared        /hana/shared/PEW         nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.32:/hana_shared_pew_t050_vol05/usr_sap_node5 /usr/sap/PEW             nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.38:/hana_data2_pew_mnt00005_t050_vol         /hana/data2/PEW/mnt00001 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+10.22.51.31:/hana_data2_pew_mnt00006_t050_vol         /hana/data2/PEW/mnt00002 nfs rw,hard,timeo=600,vers=4,rsize=1048576,wsize=1048576,intr,noatime,lock 0 0
+
+#PMEM Section
+UUID="6fc35537-5108-4bdf-b788-70a7aad8b32b" /hana/pmem/nv01 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="d13f272b-d420-4bc6-a4d0-b40eb24a4f9c" /hana/pmem/nv02 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="48a8ac0f-a72d-4e06-a7a9-2dd4dd5888fe" /hana/pmem/nv03 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="3aaf1c44-9017-42de-a221-0ebef99c9ca9" /hana/pmem/nv04 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="ce032e79-06ed-4ef8-bb32-4f83c4b1be7b" /hana/pmem/nv05 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="9b058444-7001-4cde-93c7-a7f9b5871ee5" /hana/pmem/nv06 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="65ee99cb-6a80-42ca-82b8-f4568c3247e8" /hana/pmem/nv07 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+###### Old entry UUID="5f31cbda-f7f8-4e12-879d-3cf714c3c92d" /hana/pmem/nv07 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="eb0caaa8-8191-490d-b955-f3a73ed6fe26" /hana/pmem/nv08 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="27559cbc-c04d-4776-99e9-889ef205dd33" /hana/pmem/nv09 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="54922eca-01f5-4401-8a47-b9eb0650da97" /hana/pmem/nv10 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="c42d959a-cf7c-4125-af6d-6576b5eaf7ca" /hana/pmem/nv11 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="5075fe41-ac0c-4717-b892-b8e537ffc8c0" /hana/pmem/nv12 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="b2fab70d-91f2-497f-813e-c197fe6f02c9" /hana/pmem/nv13 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="caffbcc4-2d9f-495e-80ad-d73405ff76d9" /hana/pmem/nv14 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="5d897596-301f-443c-9776-6e81ee1eba0b" /hana/pmem/nv15 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+UUID="cb8533d0-026b-468f-9baa-7b1dff400ce7" /hana/pmem/nv16 xfs rw,relatime,attr2,dax,inode64,noquota,nofail,x-systemd.device-timeout=300 0 0
+

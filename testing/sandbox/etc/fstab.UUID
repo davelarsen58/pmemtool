@@ -1,0 +1,16 @@
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x0" /pmem0 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x1" /pmem1 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x2" /pmem2 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x3" /pmem3 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x4" /pmem4 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x5" /pmem5 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x6" /pmem6 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x7" /pmem7 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x8" /pmem8 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0x9" /pmem9 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0xa" /pmem10 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0xb" /pmem11 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0xc" /pmem12 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0xd" /pmem13 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0xe" /pmem14 xfs dax 0 0
+UUID="5038fb23-6374-4d03-81b9-93d6c984eb0xf" /pmem15 xfs dax 0 0

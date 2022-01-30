@@ -9,15 +9,20 @@ import sys
 import os
 import argparse
 
-global VERBOSE
-global DEBUG
+# global VERBOSE
+# global DEBUG
 
-VERBOSE = 0
-DEBUG = 0
-
-import ndctl as n
+import common as c
+import ipmctl as i
 import fstab as f
-from common import message, get_linenumber
+import ndctl as n
+import recovery as r
+from common import message, get_linenumber, pretty_print, check_user_is_root
+from common import V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
+
+VERBOSE = V0
+DEBUG = D0
+
 
 # Dicts used
 ndctl = {}
@@ -26,15 +31,6 @@ fstab = {}
 dimm_list = []
 skip_ndctl_dump = False
 
-def check_user_is_root():
-    status = False
-    uid = os.getuid()
-    if uid == 0:
-        status = True
-    else:
-        print("You must either SUDO or be root to run this script")
-        print("Your User ID:", uid)
-    return bool(status)
 
 def main(argv):
     # process command line arguments
@@ -44,6 +40,9 @@ def main(argv):
 
     ndctl_file = n.DEFAULT_NDCTL_FILE
     fstab_file = f.DEFAULT_FSTAB_FILE
+
+    generate_recovery = False
+    script_path = r.script_path
 
     delimiter = '; '
     fsSuffix = ''
@@ -57,15 +56,20 @@ def main(argv):
     ap.add_argument("--sandbox", required=False, help="path to optional sandbox environment. Default:''")
     ap.add_argument("--skip_ndctl_dump", required=False, help="flag to control whether to create a new ndctl data file. default:'False'")
     ap.add_argument("--verbose", required=False, help="enable Verbose mode")
-    ap.add_argument("--debug", required=False, help="enable debug mode")
+
+
+    ap.add_argument("--recover_script", required=False, help="Generate Recovery Scripts")
+    ap.add_argument("--script_path", required=False, help="Override default script path of /tmp")
 
     args = vars(ap.parse_args())
 
 
     if args['ndctl_file']:  ndctl_file = args['ndctl_file']
     if args['fstab_file']:  fstab_file = args['fstab_file']
-    if args['delimiter']:  delimiter = args['delimiter']
-    if args['suffix']:     fsSuffix = args['suffix']
+    if args['delimiter']:   delimiter = args['delimiter']
+    if args['suffix']:      fsSuffix = args['suffix']
+    if args['script_path']: r.script_path = args['script_path']
+    if args['recover_script']: generate_recovery = True
 
     if args['sandbox']:
         sandbox_path = args['sandbox']
@@ -75,114 +79,148 @@ def main(argv):
 
     if args['verbose']:
         VERBOSE = args['verbose']
+
+        '''Tie Verbose flags for all modules'''
+        c.VERBOSE = args['verbose']
+        i.VERBOSE = args['verbose']
         n.VERBOSE = args['verbose']
         f.VERBOSE = args['verbose']
+        r.VERBOSE = args['verbose']
 
-    if args['debug']:
-        DEBUG = 1
-        n.DEBUG = 1
-        f.DEBUG = 1
-
-    message("checking if current user is privileged", 1)
+    message("checking if current user is privileged", V1)
     if not check_user_is_root():
-        message("No - not privileged", 1)
+        message("No - not privileged", V0)
         sys.exit(1)
     else:
-        message("Yes", 1)
+        message("Yes", V1)
 
     if os.path.exists(fstab_file):
-        message("processing fstab data", 1)
+        message("processing fstab data", V1)
         fstab = f.parse_fstab(fstab_file)
-        message("done", 1)
+        message("done", V1)
     else:
         print("Error: missing fstab file:", fstab_file)
         sys.exit(3)
 
     if not fstab:
-        message("\nFound no Persistent Memory Filesystems in fstab\n",0,'   ')
-        message("Checked for fstab block device entries:",0,'   ')
-        message("  starting with: /dev/disk/by-uuid/ with links to /dev/pmemX",0,'   ')
-        message("  starting with: UUID= with links to /dev/pmemX",0,'   ')
-        message("  starting with: /dev/pmem",0,'   ')
-        message("\nPlease verifiy fstab contains PMFS entries\n",0,'   ')
+        message("\nFound no Persistent Memory Filesystems in fstab\n",V0,'   ')
+        message("Checked for fstab block device entries:",V0,'   ')
+        message("  starting with: /dev/disk/by-uuid/ with links to /dev/pmemX",V0,'   ')
+        message("  starting with: UUID= with links to /dev/pmemX",V0,'   ')
+        message("  starting with: /dev/pmem",V0,'   ')
+        message("\nPlease verifiy fstab contains PMFS entries\n",V0,'   ')
         sys.exit(4)
 
-    message("preparing ndctl data dump",1)
+    message("preparing ndctl data dump",V1)
     if not skip_ndctl_dump:
         n.dump(ndctl_file)
-        message("done",1)
+        message("done",V1)
     else:
-        message("Skipped due to skip_ndctl_dump flag",1)
+        message("Skipped due to skip_ndctl_dump flag",V1)
 
 
-    message("parsing ndctl data dump",1)
+    message("parsing ndctl data dump",V1)
     if os.path.exists(ndctl_file):
         ndctl = n.parse(ndctl_file)
-        message("Finshed parsing ndcl data",1)
+        message("Finshed parsing ndcl data",V1)
     else:
         print("Missing NDCTL data file:", ndctl_file)
         sys.exit(2)
 
 
+    message("ingesting ipmctl data",V1)
+    i.sockets = {}
+    i.dimms = {}
+    i.regions = {}
+
+    message("ingesting ipmctl socket data",V2)
+    if i.show_socket():
+        i.sockets = i.parse_socket()
+    #
+    message("ingesting ipmctl dimm data",V2)
+    if i.show_dimm():
+        i.dimms = i.parse_dimm()
+    #
+    message("ingesting ipmctl region data",V2)
+    if i.show_region():
+        i.regions = i.parse_region()
+
     # get list of all pmem dimms in system
-    message("generating list of dimms",1)
+    message("generating list of dimms",V1)
     dimm_list = n.get_dimm_list()
     dimm_list.sort()
-    message("done",1)
+    message("done",V1)
 
     if VERBOSE: print("ndctl and fstab data merge start")
-    message("",1)
+    message("",V1)
     for dimm in dimm_list:
         status  = n.get_dimm_status(dimm)
 
         # get the list of namespace devices (pmemX) for this DIMM
         msg = "%s %s %s" % ("generating namespace device list for", dimm, '')
-        message(msg,1)
+        message(msg,V1)
         nsDevList = n.get_ns_device_list_by_dimm(dimm)
         msg = "%s %s %s" % ("ns device list", '', '')
-        message(msg,1)
+        message(msg,V1)
 
         # since DIMM status affects region status, which affects namespaces
         # on that region, we can use that status to infer the health of the namespace
         #
         # for each namespace device, update fs status with DIMM status
         msg = "%s %s %s" % ("updating namespace status from dimm status", '', '')
-        message(msg,1)
+        message(msg,V1)
         for dev in nsDevList:
             msg = "%s %s %s" % ("updating namespace status from dimm status", dev, status)
-            message(msg,1)
+            message(msg,V1)
             f.set_fs_status(fstab, dev, status)
         msg = "%s %s %s" % ("done", '', '')
-        message(msg,1)
+        message(msg,V1)
 
         msg = "%s %s %s" % ("updating fstab namespace region", dev, '')
-        message("",1)
+        message("",V1)
         region  = n.get_region_by_dimm(dimm)
         f.set_fs_region(fstab, dev, region)
-        message("",1)
+        message("",V1)
         msg = "%s %s %s" % ("", dev, '')
-        # if VERBOSE: print("done")
 
         msg = "%s %s %s" % ("updating namespace dimm list", dev, '')
-        message(msg,1)
+        message(msg,V1)
         dList = n.get_region_dimm_list(region)
         dimms = ' '.join(dList)
         f.set_fs_dimms(fstab, dev, dimms)
         msg = "%s %s %s %s" % ("updated entry ", dev, ' with:', dimms)
-        message(msg,1)
+        message(msg,V1)
 
-    message("ndctl and fstab data merge complete",1)
-    message("Sending Reports",1)
+    message("ndctl and fstab data merge complete",V1)
+    # ====================================================
 
-    n.list_dimm_table()
+    message("Sending Reports",V1)
 
-    print()
+    import datetime
+    time_stamp = datetime.datetime.now()
+    version = 'PMT script version: %s\n'  % ( c.version())
+
+    print('%s %s' % (time_stamp, version) )
+
+    message("------ ipmctl Begin list_dimm_table --------",V3)
+    d = i.get_dimms()
+    i.list_dimms(d)
+    message("------ ipmctl End list_dimm_table --------",V3)
+
+    message("------ fstab Begin print_fstab_table --------",V3)
     f.print_fstab_table(fstab)
-    print()
+    message("------ ipmctl End print_fstab_table --------",V3)
 
+
+    message("------ fstab Begin f.print_fs_mounts --------",V3)
     suffix = fsSuffix + delimiter
     print("\nPMFS with OK status: ", end='')
     f.print_fs_mounts(fstab,'ok', suffix)
+    message("------ ipmctl End f.print_fs_mounts --------",V3)
+
+    if generate_recovery:
+        r.recover_all()
+
 
 if __name__ == "__main__":
     main(sys.argv[1:])

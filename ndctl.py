@@ -35,6 +35,143 @@ NDCTL_FILE = SANDBOX + "/tmp/ndctl_list_NDRH.txt"
 
 ndctl = {}
 
+# ---------------------------------------------------------------------
+def get_nmem_dev_list(node):
+    ''' returns list of nmems['nmem0' 'nmem1' 'nmem2' 'nmem3' 'nmem4' 'nmem5']
+
+    ndctl list -D -U 0
+    {
+    "dev":"nmem2",
+    "id":"8089-a2-1836-00002716",
+    "handle":33,
+    "phys_id":42,
+    "flag_failed_flush":true,
+    "flag_smart_event":true,
+    "security":"disabled"
+    }
+    '''
+    file_name = '/tmp/ndctl_list_-D_-U.txt'
+    cmd = "/usr/bin/ndctl list -D -U " + str(node) + " > " + file_name
+    os.system(cmd)
+    #
+    tmp = {}
+    my_list = []
+
+    with open(file_name, 'r') as f:
+        tmp  =  json.load(f)
+
+    for t in range(len(tmp)):
+        my_list.append(tmp[0]['dev'])
+        
+    return my_list
+
+# ---------------------------------------------------------------------
+def get_region_dev_list(node):
+    ''' returns list of regions devices, ie: "region0"
+    ndctl list -U 0
+    [
+        {
+        "dev":"region0",
+        "size":1623497637888,
+        "available_size":0,
+        "max_available_extent":0,
+        "type":"pmem",
+        "iset_id":-7155516910447809332,
+        "persistence_domain":"memory_controller"
+        }
+    ]
+    '''
+    file_name = '/tmp/ndctl_list_-R_-U.txt'
+    cmd = "/usr/bin/ndctl list -R -U " + str(node) + " > " + file_name
+    os.system(cmd)
+    #
+    tmp = {}
+    with open(file_name, 'r') as f:
+        tmp  =  json.load(f)
+
+    my_list = []
+    for t in range(len(tmp)):
+        my_list.append(tmp[0]['dev'])
+
+    return my_list
+
+
+# ---------------------------------------------------------------------
+def get_ns_dev(node):
+    ''' returns list of namespace names, ie: "namespace0.0"
+    ndctl list -U 0
+    [
+        {
+            "dev":"namespace0.0",
+            "mode":"fsdax",
+            "map":"dev",
+            "size":1598128390144,
+            "uuid":"115ff8e8-bd52-47b8-a678-9b200902d864",
+            "sector_size":512,
+            "align":2097152,
+            "blockdev":"pmem0"
+        }
+        ]
+    '''
+    file_name = '/tmp/ndctl_list_-N_-U.txt'
+    cmd = "/usr/bin/ndctl list -N -U " + str(node) + " > " + file_name
+    os.system(cmd)
+    #
+    tmp = {}
+    with open(file_name, 'r') as f:
+        tmp  =  json.load(f)
+    #
+    my_list = []
+    for t in range(len(tmp)):
+        my_list.append(tmp[0]['dev'])
+    #
+    return my_list
+
+
+# ---------------------------------------------------------------------
+def get_ns_block_dev(node):
+    ''' returns list of ns blockdevs, ie: "pmem0"
+    ndctl list -U 0
+    [
+        {
+            "dev":"namespace0.0",
+            "mode":"fsdax",
+            "map":"dev",
+            "size":1598128390144,
+            "uuid":"115ff8e8-bd52-47b8-a678-9b200902d864",
+            "sector_size":512,
+            "align":2097152,
+            "blockdev":"pmem0"
+        }
+        ]
+    '''
+
+    file_name = '/tmp/ndctl_list_-N_-U.txt'
+    cmd = "/usr/bin/ndctl list -N -U " + str(node) + " > " + file_name
+    os.system(cmd)
+    #
+    tmp = {}
+    with open(file_name, 'r') as f:
+        tmp  =  json.load(f)
+    #
+    my_list = []
+    for t in range(len(tmp)):
+        my_list.append(tmp[0]['blockdev'])
+    #
+    return my_list
+
+
+
+
+
+
+
+
+
+
+
+
+# ---------------------------------------------------------------------
 def dump(file_name = NDCTL_FILE):
     """
     dump the config to a file to parse
@@ -367,6 +504,8 @@ def main():
     print("This module is not intended to run standalone")
     print("import this module into your script to use or use")
     print("Persistent Memory Tool, pmt")
+
+    module_test()
 
 if __name__ == "__main__":
     main()

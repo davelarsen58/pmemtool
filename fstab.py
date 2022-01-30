@@ -6,7 +6,9 @@
 
 import os
 import sys
-from common import message, get_linenumber
+from common import message, get_linenumber, pretty_print
+from common import V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
+
 
 VERBOSE = 0
 DEBUG = 0
@@ -31,13 +33,6 @@ FSTAB = SANDBOX + DEFAULT_FSTAB_FILE
 DEVDIR = SANDBOX + DEFAULT_DEVDIR
 DEV_UUID = SANDBOX + DEFAULT_DEV_UUID_DIR
 
-# msg = "%s %s %s" % (get_linenumber(), ":FSTAB:", FSTAB, '')
-# message(msg, 1)
-# msg = "%s %s %s" % (get_linenumber(), ":DEVDIR:", DEVDIR, '')
-# message(msg, 1)
-# msg = "%s %s %s" % (get_linenumber(), ":DEV_UUID:", DEV_UUID, '')
-# message(msg, 1)
-
 def unit_test_result(name, status):
     print("%-30s %-10s" % (name, status))
 
@@ -48,7 +43,7 @@ def fs_uuid_to_path(uuid):
         Output: /dev/disk/by-uuid/eb0caaa8-8191-490d-b955-f3a73ed6fe26
     """
     path = DEV_UUID
-    msg = "%s %s %s" % (get_linenumber(), ":fs_uuid_to_path: input->", uuid, '')
+    msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_to_path: input->", uuid, '')
     message(msg, D1)
 
 
@@ -59,7 +54,7 @@ def fs_uuid_to_path(uuid):
     # append UUID to path
     path = path + "/" + tmp2
 
-    msg = "%s %s %s" % (get_linenumber(), ":fs_uuid_to_path: returning->", path, '')
+    msg = "%s %s %s %s" % (get_linenumber(), ":fs_uuid_to_path: returning->", path, '')
     message(msg, D1)
 
     return path
@@ -149,6 +144,32 @@ def test_fs_uuid_path_to_block_dev():
     unit_test_result('fs_uuid_path_to_block_dev()', status)
 
     return status
+
+    '''
+       fstab[block_dev] = { \
+            'status': 'ok', \
+            'mount': mnt, \
+            'fs_guid': dev, \
+            'fs_type': fs_type, \
+            'fs_opts': fs_opts, \
+            'pm_region': 'regionX', \
+            'pm_ns_name': 'namespaceX.Y', \
+            'pm_ns_dev': block_dev, \
+            'pm_ns_type': 'fsdaX', \
+            'dimms': 'dimms' \
+    '''
+
+def get_fstab_mount_pt(pmem_dev):
+    '''returns mount point for pmem_dev, ie: pmem0'''
+
+    fstab = parse_fstab()
+    return fstab[pmem_dev]['mount']
+
+def get_fstab_fs_type(pmem_dev):
+    '''returns mount point for pmem_dev, ie: pmem0'''
+    fstab = parse_fstab()
+    return fstab[pmem_dev]['fs_type']
+
 
 def parse_fstab(file_name=FSTAB):
     """
@@ -245,6 +266,7 @@ def parse_fstab(file_name=FSTAB):
                         'pm_ns_dev': block_dev, \
                         'pm_ns_type': 'fsdaX', \
                         'dimms': 'dimms' \
+
                       }
 
     msg = "%s%s" % (get_linenumber(), " :End parse_fstab")

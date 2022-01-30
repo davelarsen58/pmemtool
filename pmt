@@ -173,6 +173,19 @@ def main(argv):
             msg = "%s %s %s" % ("updating namespace status from dimm status", dev, status)
             message(msg,V1)
             f.set_fs_status(fstab, dev, status)
+
+            # hack, hack, hack
+            mount_point = fstab[dev]['mount']
+            is_mounted = os.path.ismount(mount_point)
+            f.set_fs_mounted_state(fstab, dev, is_mounted)
+
+            # TODO
+            # ndctl['regions'][0]['namespaces'][0]['size']
+            #
+            #
+            size = int(1598128390144 / 1024 / 1024 / 1024)
+            f.set_ns_size(fstab, dev, size)
+
         msg = "%s %s %s" % ("done", '', '')
         message(msg,V1)
 

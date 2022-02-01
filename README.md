@@ -17,21 +17,21 @@ Three Reports are currently generated through this tool with each targeting spec
 ### Optane DIMM Report
 The OPtane DIMM Report presents DIMM DIMM name, Status
 
-```Linux    DIMM   DIMM   Cntrl  Remaining
-Device   Health Temp   Temp   Life
-------   ------ ------ ------ ----
-nmem1    ok     33.0   32.0   100
-nmem3    ok     33.0   35.0   100
-nmem5    ok     32.0   33.0   100
-nmem10   ok     31.0   35.0   100
-nmem7    ok     33.0   32.0   100
-nmem9    ok     32.0   34.0   100
-nmem0    ok     32.0   34.0   100
-nmem2    ok     31.0   33.0   100
-nmem4    ok     33.0   33.0   100
-nmem6    ok     31.0   35.0   100
-nmem11   ok     31.0   34.0   100
-nmem8    ok     32.0   34.0   100
+```
+DIMMID  Health State     PMEM DIMM UUID         Capacity     Skt   iMC   Chan  Slot  FW Version      Device Locator
+------  ---------------  ---------------------  -----------  ----  ----  ----  ----  --------------  --------------------
+0x0001  Healthy          8089-a2-1836-00002c4b  252.454 GiB  0     0     0     1     01.02.00.5446   CPU1_DIMM_A2
+0x0011  Healthy          8089-a2-1836-0000214e  252.454 GiB  0     0     1     1     01.02.00.5446   CPU1_DIMM_B2
+0x1111  Healthy          8089-a2-1836-00002639  252.454 GiB  1     1     1     1     01.02.00.5446   CPU2_DIMM_E2
+0x1121  Healthy          8089-a2-1836-00002617  252.454 GiB  1     1     2     1     01.02.00.5446   CPU2_DIMM_F2
+0x0021  Healthy          8089-a2-1836-00002716  252.454 GiB  0     0     2     1     01.02.00.5446   CPU1_DIMM_C2
+0x0101  Healthy          8089-a2-1836-000025c2  252.454 GiB  0     1     0     1     01.02.00.5446   CPU1_DIMM_D2
+0x0111  Healthy          8089-a2-1842-00002352  252.454 GiB  0     1     1     1     01.02.00.5446   CPU1_DIMM_E2
+0x0121  Healthy          8089-a2-1836-000025fc  252.454 GiB  0     1     2     1     01.02.00.5446   CPU1_DIMM_F2
+0x1001  Healthy          8089-a2-1836-000025be  252.454 GiB  1     0     0     1     01.02.00.5446   CPU2_DIMM_A2
+0x1011  Healthy          8089-a2-1836-00001db5  252.454 GiB  1     0     1     1     01.02.00.5446   CPU2_DIMM_B2
+0x1021  Healthy          8089-a2-1836-00001e90  252.454 GiB  1     0     2     1     01.02.00.5446   CPU2_DIMM_C2
+0x1101  Healthy          8089-a2-1836-000020bf  252.454 GiB  1     1     0     1     01.02.00.5446   CPU2_DIMM_D2
 ```
 
 ### Persistent Memory Filesystem (PMFS) Report
@@ -39,12 +39,11 @@ nmem8    ok     32.0   34.0   100
 The PMFS report is driven from contents of /etc/fstab and shows PM Region, namespace device, mount point, and 
 PMEM DIMM's associated with the region and namespace.  The intent is to roll up the namespace health based upon
 teh health of teh underlying PMEM DIMM's.
-```buildoutcfg
-Health Region   NS dev     NS Type  fs_type  mount                               dimms
------- -------  ------     ------   ------   -------------------- --------------------
-ok     region0  pmem0      fsdaX    ext4     /pmemfs0             nmem5 nmem4 nmem3 nmem2 nmem1 nmem0
-ok     region1  pmem1      fsdaX    ext4     /pmemfs1             nmem11 nmem10 nmem9 nmem8 nmem7 nmem6
-
+```
+Mount Point  Mounted NS Size   Health   Region     NS dev   NS Type  fs_type  PMEM Devices
+------------ ------- --------- -------- ---------- -------- -------- -------- --------------------------------------
+/pmemfs0     False   1488 GiB  ok       region0    pmem0    fsdaX    xfs      nmem5 nmem4 nmem3 nmem2 nmem1 nmem0
+/pmemfs1     True    1488 GiB  ok       region1    pmem1    fsdaX    xfs      nmem11 nmem10 nmem9 nmem8 nmem7 nmem6
 ```
 ## Healthy Persistent Memory Mount Points
 This report lists healthy PMFS filesystems with its initial use targeted for consumption by by specific database

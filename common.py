@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-VERSION = '0.90.0'
+VERSION = '1.00.0'
 
 import os
 from inspect import currentframe, getframeinfo
@@ -22,6 +22,40 @@ D4 = 14  # Debug Depth 4
 D5 = 15  # Debug Depth 5
 
 VERBOSE = 0
+
+def clean_up(f):
+    '''delete files specified'''
+
+    file_name = f
+    msg = msg = "%s %s %s %s" % (get_linenumber(), "clean_up(", file_name, ')')
+    message(msg, V1)
+
+    cmd = "/usr/bin/rm -f "  + file_name
+    if not os.system(cmd):
+        status = True
+
+    return status
+
+def clean_all():
+    '''call clean_up function for all modules to remove tmp files'''
+
+    status = False
+
+    f_list = []
+
+    import ipmctl as i
+    import ndctl as n
+    import fstab as f
+    import recovery as r
+
+    x.append(i.clean_up)
+    x.append(n.clean_up)
+    x.append(f.clean_up)
+    x.append(r.clean_up)
+
+    for func in f_list:
+        status = func()
+        message('Sucessfull clean up of %s: ' % (func, status ) )
 
 def get_linenumber():
     cf = currentframe()

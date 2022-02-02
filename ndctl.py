@@ -27,15 +27,19 @@ DEVDIR = SANDBOX + '/dev'
 DEV_UUID = DEVDIR + '/disk/by-uuid/'
 NDCTL_FILE = SANDBOX + "/tmp/ndctl_list_NDRH.txt"
 
-# print("FSTAB", FSTAB)
-# if VERBOSE: print("DEVDIR", DEVDIR)
-# if VERBOSE: print("DEV_UUID", DEV_UUID)
-# if VERBOSE: print("NDCTL_FILE", NDCTL_FILE)
-
-
 ndctl = {}
 
 # ---------------------------------------------------------------------
+def clean_up():
+    '''clean up all tmp files associated with this mdule'''
+
+    status = False
+
+    file_name = '/tmp/ndctl*.txt'
+    status = c.clean_up(file_name)
+
+    return status
+
 def get_nmem_dev_list(node):
     ''' returns list of nmems['nmem0' 'nmem1' 'nmem2' 'nmem3' 'nmem4' 'nmem5']
 
@@ -50,10 +54,12 @@ def get_nmem_dev_list(node):
     "security":"disabled"
     }
     '''
-    file_name = '/tmp/ndctl_list_-D_-U.txt'
+    file_name = '/tmp/ndctl_list_-D_-U_node' + str(node) + '.txt'
     cmd = "/usr/bin/ndctl list -D -U " + str(node) + " > " + file_name
-    os.system(cmd)
-    #
+
+    if not os.path.exists(file_name):
+        os.system(cmd)
+    
     tmp = {}
     my_list = []
 
@@ -81,9 +87,11 @@ def get_region_dev_list(node):
         }
     ]
     '''
-    file_name = '/tmp/ndctl_list_-R_-U.txt'
+    file_name = '/tmp/ndctl_list_-R_-U_node' + str(node) + '.txt'
     cmd = "/usr/bin/ndctl list -R -U " + str(node) + " > " + file_name
-    os.system(cmd)
+    if not os.path.exists(file_name):
+        os.system(cmd)
+    
     #
     tmp = {}
     with open(file_name, 'r') as f:
@@ -113,7 +121,7 @@ def get_ns_dev(node):
         }
         ]
     '''
-    file_name = '/tmp/ndctl_list_-N_-U.txt'
+    file_name = '/tmp/ndctl_list_-N_-U' + str(node) + '.txt'
     cmd = "/usr/bin/ndctl list -N -U " + str(node) + " > " + file_name
     os.system(cmd)
     #
@@ -146,7 +154,7 @@ def get_ns_block_dev(node):
         ]
     '''
 
-    file_name = '/tmp/ndctl_list_-N_-U.txt'
+    file_name = '/tmp/ndctl_list_-N_-U' + str(node) + '.txt'
     cmd = "/usr/bin/ndctl list -N -U " + str(node) + " > " + file_name
     os.system(cmd)
     #
@@ -159,17 +167,6 @@ def get_ns_block_dev(node):
         my_list.append(tmp[0]['blockdev'])
     #
     return my_list
-
-
-
-
-
-
-
-
-
-
-
 
 # ---------------------------------------------------------------------
 def dump(file_name = NDCTL_FILE):

@@ -47,29 +47,34 @@ def main(argv):
     delimiter = '; '
     fsSuffix = ''
 
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description='Persistent Memory Tool')
 
-    ap.add_argument("--delimiter", required=False, help="Delimiter for pmfs mount path. Default:';'")
-    ap.add_argument("--suffix", required=False, help="string to append to pmfs mount path Default:''")
-    ap.add_argument("--ndctl_file", required=False, help=" path to ndctl data file.  Default:''")
-    ap.add_argument("--fstab_file", required=False, help="path to fstab file. Default:''")
+    ap.add_argument("--delimiter", help="specify delimiter for pmfs mount path. Default: %(const)s")
+    ap.add_argument("--suffix", help="string to append to pmfs mount path Default: None")
+
+    ap.add_argument("--recovery", action="store_true", help="Generate Recovery Scripts for each socket.")
+
+    ap.add_argument("--script_prefix", help="change recover script name prefix. default: recover_socket")
+    ap.add_argument("--script_path", help="change recovery script destination path.  default: /tmp")
+
+    ap.add_argument("--verbose", type=int, choices=range(1,15), help="enable increasingly more verbosity. Verbose Values=1-5, Debug Values=10-15")
     ap.add_argument("--sandbox", required=False, help="path to optional sandbox environment. Default:''")
-    ap.add_argument("--skip_ndctl_dump", required=False, help="flag to control whether to create a new ndctl data file. default:'False'")
-    ap.add_argument("--verbose", required=False, help="enable Verbose mode")
+
+    # ap.add_argument("--ndctl_file", required=False, help=" path to ndctl data file.  Default:''")
+    # ap.add_argument("--fstab_file", required=False, help="path to fstab file. Default:''")
+    # ap.add_argument("--skip_ndctl_dump", required=False, help="flag to control whether to create a new ndctl data file. default:'False'")
 
 
-    ap.add_argument("--recover_script", required=False, help="Generate Recovery Scripts")
-    ap.add_argument("--script_path", required=False, help="Override default script path of /tmp")
 
     args = vars(ap.parse_args())
 
 
-    if args['ndctl_file']:  ndctl_file = args['ndctl_file']
-    if args['fstab_file']:  fstab_file = args['fstab_file']
+    # if args['ndctl_file']:  ndctl_file = args['ndctl_file']
+    # if args['fstab_file']:  fstab_file = args['fstab_file']
     if args['delimiter']:   delimiter = args['delimiter']
     if args['suffix']:      fsSuffix = args['suffix']
     if args['script_path']: r.script_path = args['script_path']
-    if args['recover_script']: generate_recovery = True
+    if args['recovery']: generate_recovery = True
 
     if args['sandbox']:
         sandbox_path = args['sandbox']

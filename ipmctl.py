@@ -41,6 +41,10 @@ topology_xml_file = SANDBOX + tmp_dir + '/ipmctl_show_-o_nvmxml_-a_-topology.xml
 this is the current list of fields available from Optane PMEM 100 series
 They are included here for completeness
 '''
+# TODO
+# do we really need the whitelist for those things we don't care about?
+# I don't think we do, and it would clean up any errors from unknown keys
+#
 white_list = {}
 white_list['DimmID'] = 0 #   DimmID :  0x0001
 white_list['Capacity'] = 0 #   Capacity :  252.454 GiB
@@ -124,6 +128,11 @@ white_list['MaxControllerTemperature'] = 0 #   MaxControllerTemperature :  80 C
 white_list['MaxMediaTemperature'] = 0 #   MaxMediaTemperature :  78 C
 white_list['MixedSKU'] = 0 #   MixedSKU :  0
 
+white_list['FWActiveAPIVersion'] = 0 #   MixedSKU :  0
+white_list['LatchSystemShutdownState'] = 0 #   MixedSKU :  0
+#
+# TODO - Get updates from Thomas
+
 '''Here are the keys we care about'''
 white_list['Capacity'] = 1 # 'Capacity': '252.454 GiB'
 white_list['DimmUID'] = 1 # 'DimmUID': '8089-a2-1836-00002c4b'
@@ -145,12 +154,25 @@ white_list['SerialNumber'] = 1 # 'SerialNumber': '0x00002c4b'
 white_list['PartNumber'] = 1 # 'PartNumber': 'NMA1XBD256GQS'
 
 
+def clean_up():
+   '''clean up all tmp files associated with this mdule'''
+
+   status = False
+
+   file_name = '/tmp/ipmctl*.xml'
+   status = c.clean_up(file_name)
+
+   return status
+
 def show_socket(xml_file = socket_xml_file, command = show_socket_cmd):
     '''executes show socket cmd string, sending output to xml_file'''
     status = False
     #
     msg = "%s %s %s %s" % (get_linenumber(), ":show_socket():", xml_file, command)
     message(msg, D1)
+
+    # TODO - check if file exists, skip recreating if it does
+    # add message skipping creation
     #
     cmd = command + ' > ' + xml_file
     ret_val = os.system(cmd)
@@ -198,6 +220,9 @@ def show_dimm(xml_file = dimm_xml_file, command = show_dimm_cmd):
     msg = "%s %s %s %s" % (get_linenumber(), ":show_dimm():", xml_file, command)
     message(msg, D1)
     #
+    # TODO - check if file exists, skip recreating if it does
+    # add message skipping creation
+    #
     cmd = command + ' > ' + xml_file
     ret_val = os.system(cmd)
     if ret_val == 0:
@@ -230,6 +255,7 @@ def parse_dimm(xml_file = dimm_xml_file):
     for dimm in range( len(root)):
         tmp = {}
         for dimm_attr in range(len(root[dimm])):
+            # TODO: can we find a way to
             if white_list[root[dimm][dimm_attr].tag] == 1:
                 msg = "%s %s %s %s" % (get_linenumber(), "for dimm_attr in range", root[dimm][dimm_attr].tag, root[dimm][dimm_attr].text)
                 message(msg, D4)
@@ -272,6 +298,9 @@ def show_region(xml_file = region_xml_file, command = show_region_cmd):
 
     msg = "%s %s %s %s" % (get_linenumber(), ":show_region():", xml_file, command)
     message(msg, D1)
+    #
+    # TODO - check if file exists, skip recreating if it does
+    # add message skipping creation
     #
     cmd = command + ' > ' + xml_file
     ret_val = os.system(cmd)

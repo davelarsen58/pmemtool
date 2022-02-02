@@ -49,7 +49,8 @@ def recover_socket(data):
     msg = "%s %s %s %s" % (get_linenumber(), "Beginning recover():", '', '')
     message(msg, D1)
 
-    import datetime
+    import datetime  # used to get timestamp.now()
+    import socket    # used to get hostname
     
     tmp = ' '.join(data['dimms'])
     dimms = tmp.replace(' ', '')
@@ -70,6 +71,7 @@ def recover_socket(data):
     pmem_device_path = '/dev/' + namespace_dev
 
     time_stamp = datetime.datetime.now()
+    host_name = socket.gethostname()
 
     msg = "%s %s %s %s %s" % (get_linenumber(), "recover(): Socket:", socket_id, ' DIMMs: ',dimms)
     message(msg, D2)
@@ -93,70 +95,131 @@ def recover_socket(data):
     '''Build Script line-by-line'''
     script_txt.append('#!/bin/bash\n')
     script_txt.append('#\n')
-    script_txt.append('# This script created: %s\n' % ( time_stamp))
+    script_txt.append('# Script created: %s\n' % ( time_stamp))
+    script_txt.append('# Created on system: %s\n' % ( host_name))
     script_txt.append('# PMT script version: %s\n'  % ( version()))
-    script_txt.append('# Recoverying Socket: %s\n'  % (socket_id))
-    script_txt.append('# Recoverying Region: %s\n'  % (region_name))
-    script_txt.append('# Recoverying Dimms: %s\n'   % (dimms))
+    script_txt.append('# Recoverying:\n')
+    script_txt.append('#   Socket: %s\n'  % (socket_id))
+    script_txt.append('#   Region: %s\n'  % (region_name))
+    script_txt.append('#   Dimms: %s\n'   % (dimms))
     script_txt.append('\n')
 
     script_txt.append('# --- Clean Up Old Provisioning ---\n')
     script_txt.append('# Remove demand against PMEM, so we can reconfigure\n')
-    script_txt.append('umount %s\n' % (mount_point))
+    script_txt.append('\n')
+    script_txt.append('# NOTE: Recovering from a failed DIMM, these commands\n')
+    script_txt.append('#       may fail due to filesystem not being mounted,\n')
+    script_txt.append('#       namespaces being re-enumerated due to nmem changes,\n')
+    script_txt.append('#       and regions being hidden due to failed interleave-set\n')
+    script_txt.append('#       nmem devices, namespace devices, and regions are all\n')
+    script_txt.append('#       dynamically enumerated at boot time based upon hardware\n')
+    script_txt.append('#       availability\n')
+    script_txt.append('\n')
+
+    script_txt.append('logger Beginning Recovery of PMEM on socket %s\n' % (socket_id))
+    script_txt.append('\n')
+    script_txt.append('if [ ! `mountpoint -q %s` ]; then\n' % (mount_point))
+    script_txt.append('\t echo "Unmounting %s"\n' % (mount_point))
+    script_txt.append('\t logger unmounting %s\n' % (mount_point))
+    script_txt.append('\t umount %s\n' % (mount_point))
+    script_txt.append('else\n')
+    script_txt.append('\techo "%s is not mounted"\n' % (mount_point))
+    script_txt.append('\n')
+    script_txt.append('fi\n')
+    script_txt.append('\n')
+    script_txt.append('# Note: These two commands will fail if re-enumeration has happened\n')
     script_txt.append('ndctl disable-namespace %s\n' % (namespace_name))
     script_txt.append('ndctl disable-region %s\n' % (region_name))
     script_txt.append('\n')
 
     script_txt.append('# --- Erasing PMEM Devices used by this region ---\n')
-    script_txt.append('# --- Use this NDCTL command line\n')
-    script_txt.append('ndctl sanitize-dimm -c %s\n' % (nmem))
-    script_txt.append('\n')
-    script_txt.append('# --- OR this ipmctl command line, but not both!\n')
+    script_txt.append('# Note: On completion, ipmctl will respond that all DIMMs have been cleared.\n')
+    script_txt.append('#       There is no cause for concern\n')
+    script_txt.append('logger deleting PMEM configuration for socket %s for dimms %s\n' % (socket_id, dimms))
+    script_txt.append('echo deleting PMEM configuration for socket %s for dimms %s\n' % (socket_id, dimms))
     script_txt.append('ipmctl delete -f -dimm -pcd %s\n' % (dimms))
     script_txt.append('\n')
 
     script_txt.append('# Create new PMEM Region for this socket\n')
+    script_txt.append('logger creating new PMEM configuration for socket %s\n' % (socket_id))
+    script_txt.append('echo creating new PMEM configuration for socket %s\n' % (socket_id))
     script_txt.append('ipmctl create -goal -socket %s\n' % (socket_id))
     script_txt.append('\n')
 
     script_txt.append('# Reboot at this point to create the pmem region\n')
     script_txt.append('# unless there are more regions to be created now\n')
     script_txt.append('\n')
-    script_txt.append('logger rebooting to create pmem region on socket %s\n' % (socket_id))
-    script_txt.append('\n')
-    script_txt.append('# commented next line for saftey\n')
-    script_txt.append('# shutdown -r\n')
+
+    script_txt.append('while [ true ] ; do\n')
+    script_txt.append('\t read -p "Do you wish to reboot now?" yn\n')
+    script_txt.append('\t case $yn in\n')
+    script_txt.append('\t\t [Yy]* ) echo Rebooting Now; shutdown -r now; break;;\n')
+    script_txt.append('\t\t [Nn]* ) reboot later after all changes are made;;\n')
+    script_txt.append('\t\t * ) echo "Please answer yes or no.";;\n')
+    script_txt.append('\t esac\n')
+    script_txt.append('done\n')
     script_txt.append('\n')
 
     script_txt.append('# --- Post Boot provisioning ---\n')
     script_txt.append('\n')
+    script_txt.append('# no_namespace will contain 0, if there are no namespaces in this region.\n')
+    script_txt.append('namespaces_exist=`ndctl list -N -r %s | wc -l`\n' % (region_name))
+    script_txt.append('if [ "namespace_exist" -ne 0 ] ; then\n')
+    script_txt.append('\t echo Namespace Exists on region: %s\n' % (region_name))
+    script_txt.append('\t echo You Cannot Create a new namespace if there is no room on %s\n' % (region_name))
+    script_txt.append('\t exit 1\n')
+    script_txt.append('fi\n')
+
+    script_txt.append('echo Creating namespace on region: %s\n' % (region_name))
     script_txt.append('ndctl create-namespace --mode fsdax --region %s\n' % (region_name))
 
+    #TODO: integrate dymamic fs_type into command below
     script_txt.append('# --- Create PMFS on pmem device ---\n')
+    script_txt.append('echo Creating filesystem on %s:%s->%s\n' % (region_name, namespace_name, pmem_device_path))
     script_txt.append('mkfs -t xfs -m reflink=0 -f %s\n' % (pmem_device_path))
 
     script_txt.append('# --- Create PMFS Mount Point ---\n')
-    script_txt.append('mkdir %s\n' % (mount_point))
+    script_txt.append('echo Checking mount point\n')
+    script_txt.append('if [ ! -d %s ] ; then\n' % (mount_point))
+    script_txt.append('\t echo creating %s\n' % (mount_point))
+    script_txt.append('\t mkdir %s\n' % (mount_point))
+    script_txt.append('else \n')
+    script_txt.append('\t echo Mount point exists!\n')
+    script_txt.append('fi \n')
+
+    script_txt.append('echo --- Create updated fstab entry for %s--- \n' % (mount_point))
+    script_txt.append('\n')
+    script_txt.append('echo --- Get the PMFS UUID ---\n')
+    script_txt.append('new_uuid=`blkid %s`\n' % (pmem_device_path))
+    script_txt.append('echo $new_uuid\n')
+    script_txt.append('echo --- extracting fstab entry for mount point %s ---\n'% (mount_point))
+    script_txt.append('\n')
+    script_txt.append('rest=`grep /etc/fstab | cut -f2- %s`\n' % (mount_point))
+    script_txt.append('echo --- merging new uuid $new_uuid with original $rest %s ---\n')
+    script_txt.append('new_entry=`echo $new_uuid $rest`\n')
+    script_txt.append('\n')
+    script_txt.append('# --- Use below line to update /etc/fstab.\n')
+    script_txt.append('echo $new_entry\n')
+    script_txt.append('# --- Use above line to update /etc/fstab.\n')
+
+
     script_txt.append('\n')
 
-    script_txt.append('# --- Get the PMFS UUID ---\n')
-    script_txt.append('blkid %s\n' % (pmem_device_path))
-    script_txt.append('\n')
+    #TODO: update this section so it creates properly formatted fstab entry
+    #
+    # script_txt.append('# --- Update /etc/fstab with new fs uuid --- \n')
+    # script_txt.append('# This sed script can help, or edit it yourself\n')
+    # script_txt.append('new_uuid=`blkid %s  | cut -d" " -f2`\n' % ( pmem_device_path))
+    # script_txt.append('\n')
 
-    script_txt.append('# --- Update /etc/fstab with new fs uuid --- \n')
-    script_txt.append('# This sed script can help, or edit it yourself\n')
-    script_txt.append('new_uuid=`blkid %s  | cut -d" " -f2`\n' % ( pmem_device_path))
-    script_txt.append('\n')
+    # script_txt.append('# --- Example fstab entry ---\n')
+    # script_txt.append('echo \'%s >> /etc/fstab\'\n' % (fstab_entry))
+    # script_txt.append('\n')
 
-    script_txt.append('# --- Example fstab entry ---\n')
-    script_txt.append('echo \'%s >> /etc/fstab\'\n' % (fstab_entry))
-    script_txt.append('\n')
+    # script_txt.append("cat /etc/fstab | sed 's/%s/%s/' >> /tmp/new_fstab\n" % (old_uuid, 'new_uuid'))
 
-    script_txt.append('# --- Use this command to update Filesystem UUID \n')
-    script_txt.append("cat /etc/fstab | sed 's/%s/%s/' >> /tmp/new_fstab\n" % (old_uuid, 'new_uuid'))
-
-    script_txt.append('\n')
-    script_txt.append('\n')
+    # script_txt.append('\n')
+    # script_txt.append('\n')
     script_txt.append('# --- End of Script ---\n')
 
     f.writelines(script_txt)
@@ -255,39 +318,18 @@ def main():
     mount_point = ''
 
     ap = argparse.ArgumentParser()
-    # ap.add_argument("--interactive", required=False, help="")
-    # ap.add_argument("--recover",     required=False, help="")
-    # ap.add_argument("--dimm",        required=False, help="")
-    # ap.add_argument("--region",      required=False, help="")
-    # ap.add_argument("--socket",      required=False, help="")
-    # ap.add_argument("--mount_point", required=False, help="")
     ap.add_argument("--verbose",     required=False, help="")
-
-    # ap.add_argument("--dimm_xml_file",   required=False, help="NVMXML input file from ipmctl show -o nvmxml show -a -dimm")
-    # ap.add_argument("--region_xml_file", required=False, help="NVMXML input file from ipmctl show -o nvmxml show -a -region")
 
     args = vars(ap.parse_args())
 
-    # if args['dimm_xml_file']:    dimm_xml_file = args['dimm_xml_file']
-    # if args['region_xml_file']:  region_xml_file = args['region_xml_file']
-
-    # if args['interactive']: interactive = True
-    # if args['recover']:     recover = True
-    # if args['dimm']:        dimm_id = args['dimm']
-    # if args['region']:      region_id = args['region']
-    # if args['socket']:      socket_id = args['socket']
-    # if args['mount_point']: mount_point = args['mount_point']
-
     if args['verbose']:     VERBOSE = args['verbose']
-
 
     msg = "%s %s %s %s" % (get_linenumber(), "Main:Begin:", '', '')
     message(msg, D0)
 
-
     status = recover_all()
 
-
+    # TODO: call c.cleanup() to cleanup all tmp files
 
 if __name__ == '__main__':
     main()

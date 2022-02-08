@@ -4,9 +4,9 @@ Intel Optane Persistent Memory (PMEM) amd provides guided recovery from a pmem d
 Data is collected from ndctl, ipmctl,  and /etc/fstab and  integrated to enable rapid interpretation
 of PMEM DIMM, Region, namespace, and filesystem Status.
 
-The recovery option guides the user through the process of rebuilding an persistent memory interleave set to
-restore a persistent memory region to healthy state, creates a persistent memory namespace and filesystem within
-that region, and provides details to update /etc/fstab with the new blockid.
+The recovery option generates bash scripts for each CPU socket with commands to restore persistent memory services
+to an operational state should a PMEM DIMM failure occur.  Refer to [Guided_Recovery.md](Recovery Scripts) for additional
+details.
 
 Python modules were created to interact with data from [ndctl](https://docs.pmem.io/ndctl-user-guide/), [DAX Mounted File Systems](https://www.kernel.org/doc/Documentation/filesystems/dax.txt) and [fstab](https://en.wikipedia.org/wiki/Fstab) data with pmt
 providing the primary user interface through a command line.
@@ -54,24 +54,24 @@ PMFS with OK status: /pmemfs0; /pmemfs1;
 ```
 # Help
 ```buildoutcfg
-usage: pmt [-h] [--delimiter DELIMITER] [--suffix SUFFIX] [--ndctl_file NDCTL_FILE] [--fstab_file FSTAB_FILE] [--sandbox SANDBOX]
-           [--skip_ndctl_dump SKIP_NDCTL_DUMP] [--verbose VERBOSE] [--debug DEBUG]
+usage: pmt [-h] [--delimiter DELIMITER] [--suffix SUFFIX] [--recovery] [--script_prefix SCRIPT_PREFIX]
+           [--script_path SCRIPT_PATH] [--verbose {1,2,3,4,5,6,7,8,9,10,11,12,13,14}] [--sandbox SANDBOX]
+
+Persistent Memory Tool
 
 optional arguments:
   -h, --help            show this help message and exit
   --delimiter DELIMITER
-                        Delimiter for pmfs mount path. Default:';'
-  --suffix SUFFIX       string to append to pmfs mount path Default:''
-  --ndctl_file NDCTL_FILE
-                        path to ndctl data file. Default:''
-  --fstab_file FSTAB_FILE
-                        path to fstab file. Default:''
+                        specify delimiter for pmfs mount path. Default: None
+  --suffix SUFFIX       string to append to pmfs mount path Default: None
+  --recovery            Generate Recovery Scripts for each socket.
+  --script_prefix SCRIPT_PREFIX
+                        change recover script name prefix. default: recover_socket
+  --script_path SCRIPT_PATH
+                        change recovery script destination path. default: /tmp
+  --verbose {1,2,3,4,5,6,7,8,9,10,11,12,13,14}
+                        enable increasingly more verbosity. Verbose Values=1-5, Debug Values=10-15
   --sandbox SANDBOX     path to optional sandbox environment. Default:''
-  --skip_ndctl_dump SKIP_NDCTL_DUMP
-                        flag to control whether to create a new ndctl data file. default:'False'
-  --verbose VERBOSE     enable Verbose mode
-  --debug DEBUG         enable debug mode
-
 ```
 # Common Usage
 ```./pmt```

@@ -5,7 +5,7 @@ Data is collected from ndctl, ipmctl,  and /etc/fstab and  integrated to enable 
 of PMEM DIMM, Region, namespace, and filesystem Status.
 
 The recovery option generates bash scripts for each CPU socket with commands to restore persistent memory services
-to an operational state should a PMEM DIMM failure occur.  Refer to [Guided_Recovery.md](Recovery Scripts) for additional
+to an operational state should a PMEM DIMM failure occur.  Refer to [Guided Recovery](Guided_Recovery.md) for additional
 details.
 
 Python modules were created to interact with data from [ndctl](https://docs.pmem.io/ndctl-user-guide/), [DAX Mounted File Systems](https://www.kernel.org/doc/Documentation/filesystems/dax.txt) and [fstab](https://en.wikipedia.org/wiki/Fstab) data with pmt

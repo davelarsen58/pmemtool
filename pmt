@@ -23,6 +23,8 @@ from common import V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
 VERBOSE = V0
 DEBUG = D0
 
+import time
+timers = []
 
 # Dicts used
 ndctl = {}
@@ -31,9 +33,31 @@ fstab = {}
 dimm_list = []
 skip_ndctl_dump = False
 
+def print_timers(t = timers):
+    '''
+    ------------Start Main function timers---------------
+                      Function  Elapsed       Start         End
+    ------------------------------ --------- ----------- ------------
+            :main() Initialization    0.0035  98104.6441   98104.6476
+           :main() Processing Data   11.2822  98104.6476   98115.9297
+             main()->recover_all()    1.1836  98104.6476   98115.9297
+         __main__:main() Reporting   12.4775  98104.6476   98117.1250
+    ------------End Main function timers-----------------
+    '''
+    print('------------Start Main function timers---------------')
+    print('%30s %8s %11s %11s' % ('Function', 'Elapsed', 'Start', 'End') )
+    print('%30s %8s %11s %11s' % ('------------------------------', '---------', '-----------', '------------') )
+    for i in t:
+        print('%30s %9.4f %11.4f  %11.4f' % (i['name'], i['elapsed'], i['tic'], i['toc']) )
+    print()
+    print('------------End Main function timers-----------------')
+
 
 def main(argv):
     # process command line arguments
+
+    name = 'main()->Initialization'
+    tic = time.perf_counter()
 
     global VERBOSE
     global DEBUG
@@ -42,6 +66,7 @@ def main(argv):
     fstab_file = f.DEFAULT_FSTAB_FILE
 
     generate_recovery = False
+    show_timers = False
     script_path = r.script_path
 
     delimiter = '; '
@@ -53,21 +78,19 @@ def main(argv):
     ap.add_argument("--suffix", help="string to append to pmfs mount path Default: None")
 
     ap.add_argument("--recovery", action="store_true", help="Generate Recovery Scripts for each socket.")
+    ap.add_argument("--timers", action="store_true", help="Turn on module execution timers to identify slow functions().")
 
     ap.add_argument("--script_prefix", help="change recover script name prefix. default: recover_socket")
     ap.add_argument("--script_path", help="change recovery script destination path.  default: /tmp")
 
-    ap.add_argument("--verbose", type=int, choices=range(1,15), help="enable increasingly more verbosity. Verbose Values=1-5, Debug Values=10-15")
+    ap.add_argument("--verbose", type=int, choices=range(1,16), help="enable increasingly more verbosity. Verbose Values=1-5, Debug Values=10-15")
     ap.add_argument("--sandbox", required=False, help="path to optional sandbox environment. Default:''")
 
     # ap.add_argument("--ndctl_file", required=False, help=" path to ndctl data file.  Default:''")
     # ap.add_argument("--fstab_file", required=False, help="path to fstab file. Default:''")
     # ap.add_argument("--skip_ndctl_dump", required=False, help="flag to control whether to create a new ndctl data file. default:'False'")
 
-
-
     args = vars(ap.parse_args())
-
 
     # if args['ndctl_file']:  ndctl_file = args['ndctl_file']
     # if args['fstab_file']:  fstab_file = args['fstab_file']
@@ -75,6 +98,7 @@ def main(argv):
     if args['suffix']:      fsSuffix = args['suffix']
     if args['script_path']: r.script_path = args['script_path']
     if args['recovery']: generate_recovery = True
+    if args['timers']: show_timers = True
 
     if args['sandbox']:
         sandbox_path = args['sandbox']
@@ -115,6 +139,14 @@ def main(argv):
         message("  starting with: /dev/pmem",V0,'   ')
         message("\nPlease verifiy fstab contains PMFS entries\n",V0,'   ')
         sys.exit(4)
+
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
+    name = 'main()->Processing Data'
+    tic = time.perf_counter()
 
     message("preparing ndctl data dump",V1)
     if not skip_ndctl_dump:
@@ -203,7 +235,12 @@ def main(argv):
 
         msg = "%s %s %s" % ("updating namespace dimm list", dev, '')
         message(msg,V1)
-        dList = n.get_region_dimm_list(region)
+        #
+        # dList = n.get_region_dimm_list(region)
+        # changed to show ipmctl DIMM ID, which is more useful for recovery
+        x = region.replace('region','')
+        dList = i.get_dimm_list(x) # use ipmctl dimm ID's
+        #
         dimms = ' '.join(dList)
         f.set_fs_dimms(fstab, dev, dimms)
         msg = "%s %s %s %s" % ("updated entry ", dev, ' with:', dimms)
@@ -211,6 +248,14 @@ def main(argv):
 
     message("ndctl and fstab data merge complete",V1)
     # ====================================================
+
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
+    name = 'main()->Reporting'
+    main_tic = time.perf_counter()
 
     message("Sending Reports",V1)
 
@@ -237,7 +282,31 @@ def main(argv):
     message("------ ipmctl End f.print_fs_mounts --------",V3)
 
     if generate_recovery:
+        r_tic = time.perf_counter()
+        r_name = 'main()->recover_all()'
+
         r.recover_all()
+
+        r_toc = time.perf_counter()
+        delta_t = r_toc - r_tic
+        td = {'name': r_name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+        timers.append(td)
+
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
+    i.clean_up()
+    n.clean_up()
+
+    if show_timers:
+        print('Execution Trace Timers')
+        print('----------------------')
+        i.print_timers()
+        n.print_timers()
+        r.print_timers()
+        print_timers()
 
 
 if __name__ == "__main__":

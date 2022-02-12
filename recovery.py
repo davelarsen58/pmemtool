@@ -6,6 +6,9 @@ from common import message, get_linenumber, version
 from common import V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
 import common as c
 
+import time
+timers = []
+
 
 '''
 recovery.py provides functions to recover various kinds of failure conditions
@@ -46,6 +49,9 @@ def recover_socket(data):
         data['file_name']   =  '/tmp/recover_socket_0.sh'
 
     '''
+    name = __name__ + ':recover_socket()'
+    tic = time.perf_counter()
+
     msg = "%s %s %s %s" % (get_linenumber(), "Beginning recover():", '', '')
     message(msg, D1)
 
@@ -231,11 +237,20 @@ def recover_socket(data):
     msg = "%s %s %s %s" % (get_linenumber(), "End:recover_socket()", '', '')
     message(msg, D1)
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return file_name
 
 
 # ---------------------------------------------------------------------
 def recover_all():
+    name = __name__ + ':recover_all()'
+    tic = time.perf_counter()
+
+    status = True
     message("------ Recovery Script Begin --------",V3)
 
     import ipmctl as i
@@ -297,8 +312,46 @@ def recover_all():
     for script in script_list:
         print('Generated Recover Script: ', script)
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
+    return status
+
+def print_timers(t = timers):
+    '''
+    ------------Recovery function timers---------------------
+                Function  Elapsed       Start         End
+    -------------------- --------- ----------- ------------
+           show_socket()    0.5140 941291.4208  941291.9348
+          parse_socket()    0.0004 941291.9348  941291.9352
+             show_dimm()    2.0074 941291.9352  941293.9426
+            parse_dimm()    0.0068 941293.9426  941293.9494
+           show_region()    3.8237 941293.9494  941297.7731
+          parse_region()    0.0006 941297.7732  941297.7737
+             show_dimm()    2.5911 941297.7781  941300.3692
+            parse_dimm()    0.0051 941300.3692  941300.3743
+             get_dimms()    2.5962 941297.7781  941300.3744
+            list_dimms()    0.0004 941300.3744  941300.3748
+    '''
+
+    print('------------Start Recovery function timers---------------')
+    print('%30s %8s %11s %11s' % ('Function', 'Elapsed', 'Start', 'End') )
+    print('%30s %8s %11s %11s' % ('------------------------------', '---------', '-----------', '------------') )
+
+    for i in t:
+        print('%30s %9.4f %11.4f  %11.4f' % (i['name'], i['elapsed'], i['tic'], i['toc']) )
+
+    print()
+    print('------------End Recovery function timers-----------------')
+
+
 
 def main():
+
+    name = __name__ + ':main()'
+    tic = time.perf_counter()
 
     # from common import VERBOSE
     import argparse
@@ -330,6 +383,14 @@ def main():
     status = recover_all()
 
     # TODO: call c.cleanup() to cleanup all tmp files
+
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
+    print_timers()
+
 
 if __name__ == '__main__':
     main()

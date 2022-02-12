@@ -6,10 +6,13 @@ import os
 from common import message, get_linenumber, pretty_print
 from common import V0, V1, V2, V3, V4, V5, D0, D1, D2, D3, D4, D5
 import common as c
+import time
 
 VERBOSE = c.VERBOSE
 
 tmp_dir = '/tmp'
+
+timers = []
 
 # If working in a test sandbox, change paths
 # to start with path to sandbox
@@ -155,17 +158,28 @@ white_list['PartNumber'] = 1 # 'PartNumber': 'NMA1XBD256GQS'
 
 
 def clean_up():
-   '''clean up all tmp files associated with this mdule'''
+    '''clean up all tmp files associated with this mdule'''
+    name = 'clean_up()'
+    tic = time.perf_counter()
 
-   status = False
+    status = False
 
-   file_name = '/tmp/ipmctl*.xml'
-   status = c.clean_up(file_name)
+    file_name = '/tmp/ipmctl*.xml'
+    status = c.clean_up(file_name)
 
-   return status
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
+    return status
 
 def show_socket(xml_file = socket_xml_file, command = show_socket_cmd):
     '''executes show socket cmd string, sending output to xml_file'''
+    name = 'show_socket()'
+    tic = time.perf_counter()
+
+
     status = False
     #
     msg = "%s %s %s %s" % (get_linenumber(), ":show_socket():", xml_file, command)
@@ -182,6 +196,11 @@ def show_socket(xml_file = socket_xml_file, command = show_socket_cmd):
     msg = "%s %s %s %s" % (get_linenumber(), ":show_socket():", 'returned', ret_val)
     message(msg, D1)
     #
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return status
 
 def parse_socket(xml_file = socket_xml_file):
@@ -189,6 +208,9 @@ def parse_socket(xml_file = socket_xml_file):
     parses output of show -a -socket command
     returns socket dict with data from xml file
     '''
+    name = 'parse_socket()'
+    tic = time.perf_counter()
+
     sockets = {}
     #
     msg = "%s %s %s %s" % (get_linenumber(), ":parse_socket:", xml_file, 'Beginning')
@@ -211,26 +233,41 @@ def parse_socket(xml_file = socket_xml_file):
 
         sockets[socket_id] = tmp
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return sockets
 
 def show_dimm(xml_file = dimm_xml_file, command = show_dimm_cmd):
     '''executes show dimm cmd string, sending output to xml_file'''
+    name = 'show_dimm()'
+    tic = time.perf_counter()
+
     status = False
     #
     msg = "%s %s %s %s" % (get_linenumber(), ":show_dimm():", xml_file, command)
     message(msg, D1)
     #
-    # TODO - check if file exists, skip recreating if it does
-    # add message skipping creation
     #
-    cmd = command + ' > ' + xml_file
-    ret_val = os.system(cmd)
-    if ret_val == 0:
+    if os.path.exists(xml_file):
+        ret_val = 'File Exists ... Skipped'
         status = True
+    else:
+        cmd = command + ' > ' + xml_file
+        ret_val = os.system(cmd)
+        if ret_val == 0:
+            status = True
     #
     msg = "%s %s %s %s" % (get_linenumber(), ":show_dimm():", 'returned', ret_val)
     message(msg, D1)
     #
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return status
 
 def parse_dimm(xml_file = dimm_xml_file):
@@ -239,6 +276,9 @@ def parse_dimm(xml_file = dimm_xml_file):
     returns dimms dict with data from xml file
     see white_list for fields of interest
     '''
+    name = 'parse_dimm()'
+    tic = time.perf_counter()
+
     dimms = {}
     #
     msg = "%s %s %s %s" % (get_linenumber(), ":parse_dimms:", xml_file, 'Beginning')
@@ -255,11 +295,18 @@ def parse_dimm(xml_file = dimm_xml_file):
     for dimm in range( len(root)):
         tmp = {}
         for dimm_attr in range(len(root[dimm])):
+
+            tmp[root[dimm][dimm_attr].tag] = root[dimm][dimm_attr].text
+
+            #
             # TODO: can we find a way to
-            if white_list[root[dimm][dimm_attr].tag] == 1:
-                msg = "%s %s %s %s" % (get_linenumber(), "for dimm_attr in range", root[dimm][dimm_attr].tag, root[dimm][dimm_attr].text)
-                message(msg, D4)
-                tmp[root[dimm][dimm_attr].tag] = root[dimm][dimm_attr].text
+            # if white_list[root[dimm][dimm_attr].tag] == 1:
+            #   msg = "%s %s %s %s" % (get_linenumber(), "for dimm_attr in range", root[dimm][dimm_attr].tag, root[dimm][dimm_attr].text)
+            #   message(msg, D4)
+            #   tmp[root[dimm][dimm_attr].tag] = root[dimm][dimm_attr].text
+            #
+            #
+
         '''
         creating multiple indexes for accessing different ways
         expicitly indexing for clarity
@@ -287,6 +334,11 @@ def parse_dimm(xml_file = dimm_xml_file):
 
     # print("%s %s %s %s" % (get_linenumber(), ":parse_dimms:", xml_file, 'End'))
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return dimms
 
 def show_region(xml_file = region_xml_file, command = show_region_cmd):
@@ -294,6 +346,9 @@ def show_region(xml_file = region_xml_file, command = show_region_cmd):
     runs show dimm cmd string, sending output to xml_file
     returns True if sucessful
     '''
+    name = 'show_region()'
+    tic = time.perf_counter()
+
     status = False
 
     msg = "%s %s %s %s" % (get_linenumber(), ":show_region():", xml_file, command)
@@ -310,6 +365,11 @@ def show_region(xml_file = region_xml_file, command = show_region_cmd):
     msg = "%s %s %s %s" % (get_linenumber(), ":show_region():", 'returned', ret_val)
     message(msg, D1)
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return status
 
 def parse_region(xml_file = region_xml_file):
@@ -317,6 +377,9 @@ def parse_region(xml_file = region_xml_file):
     parses output of show -a -regions command
     returns regions dict with data from xml file
     '''
+    name = 'parse_region()'
+    tic = time.perf_counter()
+
     msg = "%s %s %s %s" % (get_linenumber(), "parse_region: Parse Beginning:", xml_file, '')
     message(msg, D1)
     regions = {}
@@ -353,12 +416,20 @@ def parse_region(xml_file = region_xml_file):
     msg = "%s %s %s %s" % (get_linenumber(), "parse_region: Parse Complete:", xml_file, '')
     message(msg, D1)
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return regions
 
 def list_dimms(dimms):
-    '''print a list of dimms'''
+    '''
+    Print a list of PMEM DIMMs with select details
+    '''
+    name = 'list_dimms()'
+    tic = time.perf_counter()
 
-    '''Table Header'''
     print('%-6s' %  'DIMMID', end="  ")
     print('%-15s' %  'Health State', end="  ")
     print('%-21s' % 'PMEM DIMM UUID', end="  ")
@@ -370,7 +441,7 @@ def list_dimms(dimms):
     print('%-14s' %  'FW Version', end="  ")
     print('%-20s' % 'Device Locator', end="  ")
     print()
-    #
+    
     print('%-6s' %  '------', end="  ")
     print('%-15s' %  '---------------', end="  ")
     print('%-21s' % '---------------------', end="  ")
@@ -382,7 +453,7 @@ def list_dimms(dimms):
     print('%14s' %  '--------------', end="  ")
     print('%-20s' % '--------------------', end="  ")
     print()
-    #
+    
     for key in sorted(dimms.keys()):
         print('%-6s' % (dimms[key]['DimmID']), end="  ")
         print('%-15s' % (dimms[key]['HealthState']), end="  ")
@@ -397,6 +468,11 @@ def list_dimms(dimms):
         print()
     print()
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
 def get_dimms(filter = 'DimmNumber_'):
     '''
     returns dict of DIMM's with attributes for specified filter 
@@ -410,6 +486,8 @@ def get_dimms(filter = 'DimmNumber_'):
         DimmUID_*       example: DimmUID_8089-a2-1836-00002c4b
         DeviceLocator_* example: DeviceLocator_CPU1_DIMM_A2
     '''
+    name = 'get_dimms()'
+    tic = time.perf_counter()
 
     if show_dimm():
         d = parse_dimm()
@@ -418,10 +496,19 @@ def get_dimms(filter = 'DimmNumber_'):
     for key in sorted(d.keys()):
         if key.startswith(filter):
             tmp[key] = d[key]
+
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return tmp
 
-def get_dimm_list(socket_num):
+def get_dimm_list(socket_num = 0):
     '''returns list of DimmID's '''
+    name = 'get_dimm_list()'
+    tic = time.perf_counter()
+
     my_list = []
 
     my_filter = 'DimmID_0x' + str(socket_num)
@@ -429,11 +516,18 @@ def get_dimm_list(socket_num):
     for i in sorted(my_dict.keys()):
         my_list.append(my_dict[i]['DimmID'])
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return my_list
 
 
 def get_socket(filter = 'SocketID_'):
     '''Returns list of sockets with attributes'''
+    name = 'get_socket()'
+    tic = time.perf_counter()
 
     if show_socket():
         s = parse_socket()
@@ -443,18 +537,34 @@ def get_socket(filter = 'SocketID_'):
         if key.startswith(filter):
             tmp[key] = s[key]
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return tmp
 
 def get_socket_list():
     '''returns list of SocketID's '''
+    name = 'get_socket_list()'
+    tic = time.perf_counter()
+
     my_list = []
     my_dict = get_socket()
     for i in sorted(my_dict.keys()):
         my_list.append(my_dict[i]['SocketID'])
+
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return my_list
 
 def get_region(filter = 'RegionID'):
     '''Returns list of regions with index keys'''
+    name = 'get_region()'
+    tic = time.perf_counter()
 
     if show_region():
         r = parse_region()
@@ -465,21 +575,65 @@ def get_region(filter = 'RegionID'):
         if i.startswith(filter):
             tmp[i] = r[i]
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return tmp
 
 def get_region_list():
     '''returns list of RegionID's '''
+    name = 'get_region_list()'
+    tic = time.perf_counter()
+
     my_list = []
     my_dict = get_region()
 
     for i in sorted(my_dict.keys()):
         my_list.append(my_dict[i]['RegionID'])
 
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     return my_list
 
-def main():
+def print_timers(t = timers):
+    '''
+    ------------ipmctl function timers---------------------
+                Function  Elapsed       Start         End
+    -------------------- --------- ----------- ------------
+           show_socket()    0.5140 941291.4208  941291.9348
+          parse_socket()    0.0004 941291.9348  941291.9352
+             show_dimm()    2.0074 941291.9352  941293.9426
+            parse_dimm()    0.0068 941293.9426  941293.9494
+           show_region()    3.8237 941293.9494  941297.7731
+          parse_region()    0.0006 941297.7732  941297.7737
+             show_dimm()    2.5911 941297.7781  941300.3692
+            parse_dimm()    0.0051 941300.3692  941300.3743
+             get_dimms()    2.5962 941297.7781  941300.3744
+            list_dimms()    0.0004 941300.3744  941300.3748
+    '''
+    print('------------Start ipmctl function timers---------------')
+    print('%20s %8s %11s %11s' % ('Function', 'Elapsed', 'Start', 'End') )
+    print('%20s %8s %11s %11s' % ('--------------------', '---------', '-----------', '------------') )
 
-    # from common import VERBOSE
+    for i in t:
+        print('%20s %9.4f %11.4f  %11.4f' % (i['name'], i['elapsed'], i['tic'], i['toc']) )
+    print()
+    print('------------End ipmctl function timers-----------------')
+
+def main():
+    '''
+    main() calls functions wihtin this module to verify they function
+    properly in this environment prior to being called from an external
+    routine.
+    '''
+    name = 'main()'
+    tic = time.perf_counter()
+
     import argparse
 
     global show_dimm_cmd
@@ -503,9 +657,6 @@ def main():
 
     msg = "%s %s %s %s" % (get_linenumber(), "Main:Begin:", '', '')
     message(msg, V0)
-
-    # if not dimm_xml_file or not region_xml_file:
-        # sys.exit(1)
 
     '''DIMM Related Functions'''
     msg = "%s %s %s %s" % (get_linenumber(), "Main: calling show_dimm:", dimm_xml_file, '')
@@ -568,6 +719,13 @@ def main():
         r = get_region_list()
         message('PP region list',V0)
         pretty_print(r)
+
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
+    print_timers()
 
 if __name__ == '__main__':
     main()

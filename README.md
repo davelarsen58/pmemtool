@@ -4,9 +4,9 @@ Intel Optane Persistent Memory (PMEM) amd provides guided recovery from a pmem d
 Data is collected from ndctl, ipmctl,  and /etc/fstab and  integrated to enable rapid interpretation
 of PMEM DIMM, Region, namespace, and filesystem Status.
 
-The recovery option guides the user through the process of rebuilding an persistent memory interleave set to
-restore a persistent memory region to healthy state, creates a persistent memory namespace and filesystem within
-that region, and provides details to update /etc/fstab with the new blockid.
+The recovery option generates bash scripts for each CPU socket with commands to restore persistent memory services
+to an operational state should a PMEM DIMM failure occur.  Refer to [Guided Recovery](Guided_Recovery.md) for additional
+details.
 
 Python modules were created to interact with data from [ndctl](https://docs.pmem.io/ndctl-user-guide/), [DAX Mounted File Systems](https://www.kernel.org/doc/Documentation/filesystems/dax.txt) and [fstab](https://en.wikipedia.org/wiki/Fstab) data with pmt
 providing the primary user interface through a command line.
@@ -17,21 +17,21 @@ Three Reports are currently generated through this tool with each targeting spec
 ### Optane DIMM Report
 The OPtane DIMM Report presents DIMM DIMM name, Status
 
-```Linux    DIMM   DIMM   Cntrl  Remaining
-Device   Health Temp   Temp   Life
-------   ------ ------ ------ ----
-nmem1    ok     33.0   32.0   100
-nmem3    ok     33.0   35.0   100
-nmem5    ok     32.0   33.0   100
-nmem10   ok     31.0   35.0   100
-nmem7    ok     33.0   32.0   100
-nmem9    ok     32.0   34.0   100
-nmem0    ok     32.0   34.0   100
-nmem2    ok     31.0   33.0   100
-nmem4    ok     33.0   33.0   100
-nmem6    ok     31.0   35.0   100
-nmem11   ok     31.0   34.0   100
-nmem8    ok     32.0   34.0   100
+```
+DIMMID  Health State     PMEM DIMM UUID         Capacity     Skt   iMC   Chan  Slot  FW Version      Device Locator
+------  ---------------  ---------------------  -----------  ----  ----  ----  ----  --------------  --------------------
+0x0001  Healthy          8089-a2-1836-00002c4b  252.454 GiB  0     0     0     1     01.02.00.5446   CPU1_DIMM_A2
+0x0011  Healthy          8089-a2-1836-0000214e  252.454 GiB  0     0     1     1     01.02.00.5446   CPU1_DIMM_B2
+0x1111  Healthy          8089-a2-1836-00002639  252.454 GiB  1     1     1     1     01.02.00.5446   CPU2_DIMM_E2
+0x1121  Healthy          8089-a2-1836-00002617  252.454 GiB  1     1     2     1     01.02.00.5446   CPU2_DIMM_F2
+0x0021  Healthy          8089-a2-1836-00002716  252.454 GiB  0     0     2     1     01.02.00.5446   CPU1_DIMM_C2
+0x0101  Healthy          8089-a2-1836-000025c2  252.454 GiB  0     1     0     1     01.02.00.5446   CPU1_DIMM_D2
+0x0111  Healthy          8089-a2-1842-00002352  252.454 GiB  0     1     1     1     01.02.00.5446   CPU1_DIMM_E2
+0x0121  Healthy          8089-a2-1836-000025fc  252.454 GiB  0     1     2     1     01.02.00.5446   CPU1_DIMM_F2
+0x1001  Healthy          8089-a2-1836-000025be  252.454 GiB  1     0     0     1     01.02.00.5446   CPU2_DIMM_A2
+0x1011  Healthy          8089-a2-1836-00001db5  252.454 GiB  1     0     1     1     01.02.00.5446   CPU2_DIMM_B2
+0x1021  Healthy          8089-a2-1836-00001e90  252.454 GiB  1     0     2     1     01.02.00.5446   CPU2_DIMM_C2
+0x1101  Healthy          8089-a2-1836-000020bf  252.454 GiB  1     1     0     1     01.02.00.5446   CPU2_DIMM_D2
 ```
 
 ### Persistent Memory Filesystem (PMFS) Report
@@ -39,12 +39,11 @@ nmem8    ok     32.0   34.0   100
 The PMFS report is driven from contents of /etc/fstab and shows PM Region, namespace device, mount point, and 
 PMEM DIMM's associated with the region and namespace.  The intent is to roll up the namespace health based upon
 teh health of teh underlying PMEM DIMM's.
-```buildoutcfg
-Health Region   NS dev     NS Type  fs_type  mount                               dimms
------- -------  ------     ------   ------   -------------------- --------------------
-ok     region0  pmem0      fsdaX    ext4     /pmemfs0             nmem5 nmem4 nmem3 nmem2 nmem1 nmem0
-ok     region1  pmem1      fsdaX    ext4     /pmemfs1             nmem11 nmem10 nmem9 nmem8 nmem7 nmem6
-
+```
+Mount Point  Mounted NS Size   Health   Region     NS dev   NS Type  fs_type  PMEM Devices
+------------ ------- --------- -------- ---------- -------- -------- -------- --------------------------------------
+/pmemfs0     False   1488 GiB  ok       region0    pmem0    fsdaX    xfs      nmem5 nmem4 nmem3 nmem2 nmem1 nmem0
+/pmemfs1     True    1488 GiB  ok       region1    pmem1    fsdaX    xfs      nmem11 nmem10 nmem9 nmem8 nmem7 nmem6
 ```
 ## Healthy Persistent Memory Mount Points
 This report lists healthy PMFS filesystems with its initial use targeted for consumption by by specific database
@@ -55,24 +54,24 @@ PMFS with OK status: /pmemfs0; /pmemfs1;
 ```
 # Help
 ```buildoutcfg
-usage: pmt [-h] [--delimiter DELIMITER] [--suffix SUFFIX] [--ndctl_file NDCTL_FILE] [--fstab_file FSTAB_FILE] [--sandbox SANDBOX]
-           [--skip_ndctl_dump SKIP_NDCTL_DUMP] [--verbose VERBOSE] [--debug DEBUG]
+usage: pmt [-h] [--delimiter DELIMITER] [--suffix SUFFIX] [--recovery] [--script_prefix SCRIPT_PREFIX]
+           [--script_path SCRIPT_PATH] [--verbose {1,2,3,4,5,6,7,8,9,10,11,12,13,14}] [--sandbox SANDBOX]
+
+Persistent Memory Tool
 
 optional arguments:
   -h, --help            show this help message and exit
   --delimiter DELIMITER
-                        Delimiter for pmfs mount path. Default:';'
-  --suffix SUFFIX       string to append to pmfs mount path Default:''
-  --ndctl_file NDCTL_FILE
-                        path to ndctl data file. Default:''
-  --fstab_file FSTAB_FILE
-                        path to fstab file. Default:''
+                        specify delimiter for pmfs mount path. Default: None
+  --suffix SUFFIX       string to append to pmfs mount path Default: None
+  --recovery            Generate Recovery Scripts for each socket.
+  --script_prefix SCRIPT_PREFIX
+                        change recover script name prefix. default: recover_socket
+  --script_path SCRIPT_PATH
+                        change recovery script destination path. default: /tmp
+  --verbose {1,2,3,4,5,6,7,8,9,10,11,12,13,14}
+                        enable increasingly more verbosity. Verbose Values=1-5, Debug Values=10-15
   --sandbox SANDBOX     path to optional sandbox environment. Default:''
-  --skip_ndctl_dump SKIP_NDCTL_DUMP
-                        flag to control whether to create a new ndctl data file. default:'False'
-  --verbose VERBOSE     enable Verbose mode
-  --debug DEBUG         enable debug mode
-
 ```
 # Common Usage
 ```./pmt```

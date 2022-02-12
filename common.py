@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-VERSION = '1.00.0'
+VERSION = '1.01.0'
 
 import os
 from inspect import currentframe, getframeinfo

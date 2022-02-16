@@ -658,8 +658,13 @@ def print_timers(t = timers):
     print('%30s %8s %11s %11s' % ('Function', 'Elapsed', 'Start', 'End') )
     print('%30s %8s %11s %11s' % ('------------------------------', '---------', '-----------', '------------') )
 
+    first = t[0]['tic']
+    last = t[len(t) -1]['toc']
+
     for i in t:
         print('%30s %9.4f %11.4f  %11.4f' % (i['name'], i['elapsed'], i['tic'], i['toc']) )
+    
+    print('%30s %9.4f %11.4f  %11.4f' % ('NDCTL Overall', last - first, first, last) )
     print()
     print('------------End ndctl function timers-----------------')
 

@@ -56,8 +56,11 @@ def print_timers(t = timers):
 def main(argv):
     # process command line arguments
 
+    main_name = 'main()'
+    main_tic = time.perf_counter()
+
     name = 'main()->Initialization'
-    tic = time.perf_counter()
+    init_tic = time.perf_counter()
 
     global VERBOSE
     global DEBUG
@@ -140,13 +143,13 @@ def main(argv):
         message("\nPlease verifiy fstab contains PMFS entries\n",V0,'   ')
         sys.exit(4)
 
-    toc = time.perf_counter()
-    delta_t = toc - tic
-    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    init_toc = time.perf_counter()
+    delta_t = init_toc - init_tic
+    td = {'name': name, "elapsed": delta_t, 'tic': init_tic, 'toc': init_toc}
     timers.append(td)
 
     name = 'main()->Processing Data'
-    tic = time.perf_counter()
+    proc_tic = time.perf_counter()
 
     message("preparing ndctl data dump",V1)
     if not skip_ndctl_dump:
@@ -249,13 +252,13 @@ def main(argv):
     message("ndctl and fstab data merge complete",V1)
     # ====================================================
 
-    toc = time.perf_counter()
-    delta_t = toc - tic
-    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    proc_toc = time.perf_counter()
+    delta_t = proc_toc - proc_tic
+    td = {'name': name, "elapsed": delta_t, 'tic': proc_tic, 'toc': proc_toc}
     timers.append(td)
 
     name = 'main()->Reporting'
-    main_tic = time.perf_counter()
+    report_tic = time.perf_counter()
 
     message("Sending Reports",V1)
 
@@ -289,16 +292,22 @@ def main(argv):
 
         r_toc = time.perf_counter()
         delta_t = r_toc - r_tic
-        td = {'name': r_name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+        td = {'name': r_name, "elapsed": delta_t, 'tic': r_tic, 'toc': r_toc}
         timers.append(td)
 
-    toc = time.perf_counter()
-    delta_t = toc - tic
-    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    report_toc = time.perf_counter()
+    # toc = time.perf_counter()
+    delta_t = report_toc - report_tic
+    td = {'name': name, "elapsed": delta_t, 'tic': report_tic, 'toc': report_toc}
     timers.append(td)
 
     i.clean_up()
     n.clean_up()
+
+    main_toc = time.perf_counter()
+    delta_t = main_toc - main_tic
+    td = {'name': main_name, "elapsed": delta_t, 'tic': main_tic, 'toc': main_toc}
+    timers.append(td)
 
     if show_timers:
         print('Execution Trace Timers')

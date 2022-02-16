@@ -134,8 +134,8 @@ def recover_socket(data):
     script_txt.append('fi\n')
     script_txt.append('\n')
     script_txt.append('# Note: These two commands will fail if re-enumeration has happened\n')
-    script_txt.append('ndctl disable-namespace %s\n' % (namespace_name))
-    script_txt.append('ndctl disable-region %s\n' % (region_name))
+    script_txt.append('ndctl disable-namespace %s > /dev/null 2&1\n' % (namespace_name))
+    script_txt.append('ndctl disable-region %s > /dev/null 2&1\n' % (region_name))
     script_txt.append('\n')
 
     script_txt.append('# --- Erasing PMEM Devices used by this region ---\n')
@@ -148,7 +148,7 @@ def recover_socket(data):
 
     script_txt.append('# Create new PMEM Region for this socket\n')
     script_txt.append('logger creating new PMEM configuration for socket %s\n' % (socket_id))
-    script_txt.append('echo creating new PMEM configuration for socket %s\n' % (socket_id))
+    script_txt.append('echo "creating new PMEM configuration for socket %s"\n' % (socket_id))
     script_txt.append('ipmctl create -goal -socket %s\n' % (socket_id))
     script_txt.append('\n')
 
@@ -166,31 +166,31 @@ def recover_socket(data):
     script_txt.append('done\n')
     script_txt.append('\n')
 
-    script_txt.append('# --- Post Boot provisioning ---\n')
+    script_txt.append('echo " --- Post Boot provisioning ---"\n')
     script_txt.append('\n')
     script_txt.append('# no_namespace will contain 0, if there are no namespaces in this region.\n')
     script_txt.append('namespaces_exist=`ndctl list -N -r %s | wc -l`\n' % (region_name))
     script_txt.append('if [ "namespace_exist" -ne 0 ] ; then\n')
-    script_txt.append('\t echo Namespace Exists on region: %s\n' % (region_name))
-    script_txt.append('\t echo You Cannot Create a new namespace if there is no room on %s\n' % (region_name))
+    script_txt.append('\t echo "Namespace Exists on region: %s"\n' % (region_name))
+    script_txt.append('\t echo "You Cannot Create a new namespace if there is no room on %s"\n' % (region_name))
     script_txt.append('\t exit 1\n')
     script_txt.append('fi\n')
 
-    script_txt.append('echo Creating namespace on region: %s\n' % (region_name))
+    script_txt.append('echo "Creating namespace on region: %s"\n' % (region_name))
     script_txt.append('ndctl create-namespace --mode fsdax --region %s\n' % (region_name))
 
     #TODO: integrate dymamic fs_type into command below
     script_txt.append('# --- Create PMFS on pmem device ---\n')
-    script_txt.append('echo Creating filesystem on %s:%s->%s\n' % (region_name, namespace_name, pmem_device_path))
+    script_txt.append('echo "Creating filesystem on %s:%s->%s"\n' % (region_name, namespace_name, pmem_device_path))
     script_txt.append('mkfs -t xfs -m reflink=0 -f %s\n' % (pmem_device_path))
 
     script_txt.append('# --- Create PMFS Mount Point ---\n')
-    script_txt.append('echo Checking mount point\n')
+    script_txt.append('echo "Checking mount point"\n')
     script_txt.append('if [ ! -d %s ] ; then\n' % (mount_point))
-    script_txt.append('\t echo creating %s\n' % (mount_point))
+    script_txt.append('\t echo "creating %s"\n' % (mount_point))
     script_txt.append('\t mkdir %s\n' % (mount_point))
     script_txt.append('else \n')
-    script_txt.append('\t echo Mount point exists!\n')
+    script_txt.append('\t echo "Mount point exists!"\n')
     script_txt.append('fi \n')
 
     script_txt.append('echo --- Create updated fstab entry for %s--- \n' % (mount_point))
@@ -200,12 +200,13 @@ def recover_socket(data):
     script_txt.append('echo $new_uuid\n')
     script_txt.append('echo --- extracting fstab entry for mount point %s ---\n'% (mount_point))
     script_txt.append('\n')
-    script_txt.append('rest=`grep /etc/fstab | cut -f2- %s`\n' % (mount_point))
+    script_txt.append('rest=`grep %s /etc/fstab | cut -f2-`\n' % (mount_point))
     script_txt.append('echo --- merging new uuid $new_uuid with original $rest %s ---\n')
     script_txt.append('new_entry=`echo $new_uuid $rest`\n')
     script_txt.append('\n')
     script_txt.append('# --- Use below line to update /etc/fstab.\n')
-    script_txt.append('echo $new_entry\n')
+    script_txt.append('echo Writing new fstab entry to /tmp/fstab_socket_%s\n' % (socket_id))
+    script_txt.append('echo $new_entry > /tmp/fstab_socket_%s\n' % (socket_id))
     script_txt.append('# --- Use above line to update /etc/fstab.\n')
 
 
@@ -226,6 +227,7 @@ def recover_socket(data):
 
     # script_txt.append('\n')
     # script_txt.append('\n')
+
     script_txt.append('# --- End of Script ---\n')
 
     f.writelines(script_txt)

@@ -6,6 +6,22 @@
 |   | [PMFS Health Report](Healthy_PMFS_Report.md)  | [Steve Scargall](https://stevescargall.com/)  | [PMEM Programming Book](https://pmem.io/books/) |
 
 # Persistent Memory Filesystem Report
+This report provides key operational information regarding a Persistent Memory Filesystem configured in /etc/fstab.
+
+Columns Presented are as follows:
+| Column | Purpose |
+| ------ | ------- |
+| Mount Point | The directory where the filesystem is normally mounted as specified in fstab |
+| Mounted | indicates whether the filesystem is mounted or not when report was run |
+| NS Size | Namespace size for the underlying Persistent Memory region exposed as the filesystem |
+| Health  | Health reflects the roll up status of the underlying PMEM devices, Region, and namespace |
+| Region  | Name of the logical Persistent Memory Region providing the namespace is mapped within |
+| NS Dev  | The logical device exposed by the OS to access the PMEM nemory space, and typically exposed as a DAX mounted filesystem |
+| NS Type | The namespace mode as described in ([Managing PMEM Namespaces](https://docs.pmem.io/ndctl-user-guide/managing-namespaces)) |
+| FS Type | Filesystem type specified in fstab |
+| PMEM Devices | DIMM ID's of the physical PMEM DIMM's supporting that PMEM Region and namespace.  They are listed to enable corrlation of the filesystem service dependency on the hardware |
+
+
 ```
 Mount Point  Mounted NS Size   Health   Region     NS dev   NS Type  fs_type  PMEM Devices
 ------------ ------- --------- -------- ---------- -------- -------- -------- --------------------------------------

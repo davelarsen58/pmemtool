@@ -61,38 +61,39 @@ def recover_socket(data):
     tmp = ' '.join(data['dimms'])
     dimms = tmp.replace(' ', '')
     nmem = data['nmem']
-
+    #
     region_name = data['region']
     namespace_name = data['ns_name']
     namespace_dev = data['ns_dev']
     fs_type = data['fs_type']
     capacity = data['Capacity']
     mount_point = data['mount_point']
-
+    #
     socket_id = data['socket_id']
     socket_num = data['socket_num']
-
+    #
     file_name = data['file_name']
-
+    #
     pmem_device_path = '/dev/' + namespace_dev
-
+    #
     time_stamp = datetime.datetime.now()
     host_name = socket.gethostname()
-
+    #
     msg = "%s %s %s %s %s" % (get_linenumber(), "recover(): Socket:", socket_id, ' DIMMs: ',dimms)
     message(msg, D2)
-
+    #
     old_uuid = 'UUID="xxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"'
     fstab_opts = 'defaults,dax'
     fstab_type = 'xfs'
     fstab_check = '0    0'
-
+    #
     fstab_entry = old_uuid + ' ' + mount_point + ' ' + fstab_type + ' ' + fstab_opts + ' ' + fstab_check
+    #
 
     '''container to hold the script'''
     script_txt = []
 
-    message('Opening File Name: ' + file_name, D3)
+    message('Opening File Name: ' + file_name, D2)
     f = open(file_name, "w")
 
     msg = "%s %s %s" % (get_linenumber(), "recover(): creating script:", file_name)
@@ -110,124 +111,200 @@ def recover_socket(data):
     script_txt.append('#   Dimms: %s\n'   % (dimms))
     script_txt.append('\n')
 
-    script_txt.append('# --- Clean Up Old Provisioning ---\n')
-    script_txt.append('# Remove demand against PMEM, so we can reconfigure\n')
     script_txt.append('\n')
-    script_txt.append('# NOTE: Recovering from a failed DIMM, these commands\n')
-    script_txt.append('#       may fail due to filesystem not being mounted,\n')
-    script_txt.append('#       namespaces being re-enumerated due to nmem changes,\n')
-    script_txt.append('#       and regions being hidden due to failed interleave-set\n')
-    script_txt.append('#       nmem devices, namespace devices, and regions are all\n')
-    script_txt.append('#       dynamically enumerated at boot time based upon hardware\n')
-    script_txt.append('#       availability\n')
+    script_txt.append('# Variables & Values\n')
+    script_txt.append('%s="%s"\n' % ('HOST', host_name ))
+    script_txt.append('%s="%s"\n' % ('SKT_ID', socket_id ))
+    script_txt.append('%s="%s"\n' % ('SKT_NUM', socket_num ))
+    script_txt.append('%s="%s"\n' % ('DIMMS', dimms ))
+    script_txt.append('%s="%s"\n' % ('REGION', region_name ))
+    script_txt.append('%s="%s"\n' % ('NS_NAME', namespace_name ))
+    script_txt.append('%s="%s"\n' % ('NS_DEV', namespace_dev ))
+    script_txt.append('%s="%s"\n' % ('NS_DEV_PATH', pmem_device_path ))
+    script_txt.append('%s="%s"\n' % ('FS_TYPE', fs_type ))
+    script_txt.append('%s="%s"\n' % ('MT_PT', mount_point ))
+    script_txt.append('%s="%s"\n' % ('FSTAB_OPTS', fstab_opts ))
+    script_txt.append('%s="%s"\n' % ('FSTAB_TYPE', fstab_type ))
+    script_txt.append('%s="%s"\n' % ('FSTAB_CHK', fstab_check ))
+
+    # script_txt.append('%s="%s"\n' % ('TIME', time_stamp ))
+    # script_txt.append('%s="%s"\n' % ('FSTAB_ENTRY', fstab_entry ))
+    # script_txt.append('%s="%s"\n' % ('CAPACITY', capacity ))
+    # script_txt.append('%s="%s"\n' % ('FNAME', file_name ))
+    # script_txt.append('%s="%s"\n' % ('OLD_UUID', old_uuid ))
+
     script_txt.append('\n')
 
-    script_txt.append('logger Beginning Recovery of PMEM on socket %s\n' % (socket_id))
+    # script_txt.append('# NOTE: Recovering from a failed DIMM, these commands\n')
+    # script_txt.append('#       may fail due to filesystem not being mounted,\n')
+    # script_txt.append('#       namespaces being re-enumerated due to nmem changes,\n')
+    # script_txt.append('#       and regions being hidden due to failed interleave-set\n')
+    # script_txt.append('#       nmem devices, namespace devices, and regions are all\n')
+    # script_txt.append('#       dynamically enumerated at boot time based upon hardware\n')
+    # script_txt.append('#       availability\n')
+    # script_txt.append('\n')
+
+    script_txt.append('# Cleanup Phase\n')
+    script_txt.append('PHASE1="/var/tmp/socket_%s-phase-1"\n' % (socket_id))
+
+    script_txt.append('# Recover Phase\n')
+    script_txt.append('PHASE2="/var/tmp/socket_%s-phase-2"\n' % (socket_id))
+
+    script_txt.append('# Safety Interlock to prevent undoing what we just did\n')
+    script_txt.append('DONE="/var/tmp/socket_%s-DONE"\n' % (socket_id))
     script_txt.append('\n')
-    script_txt.append('if [ ! `mountpoint -q %s` ]; then\n' % (mount_point))
-    script_txt.append('\t echo "Unmounting %s"\n' % (mount_point))
-    script_txt.append('\t logger unmounting %s\n' % (mount_point))
-    script_txt.append('\t umount %s\n' % (mount_point))
+
+    script_txt.append('# if the DONE flag exists, complain & exit\n')
+    script_txt.append('if [ -f "$DONE" ] ; then\n')
+    script_txt.append('\techo "Found Overwrite Protection Flag, $DONE"\n')
+    script_txt.append('\techo "Remove that file to rerun this script"\n')
+    script_txt.append('\texit 1\n')
+    script_txt.append('fi\n')
+
+    script_txt.append('# if the flags dont exist, create them\n')
+    script_txt.append('# We can be PHASE1 or PHASE2, but not both\n')
+    script_txt.append('if [ ! -f $PHASE2 ] && [ ! -f "$PHASE1" ] ; then\n')
+    script_txt.append('\ttouch $PHASE1\n')
+    script_txt.append('fi\n')
+
+    script_txt.append('# Check for phase 1 flag, clean up the old stuff\n')
+    script_txt.append('if [ -f $PHASE1 ] ; then\n')
+
+    script_txt.append('\n')
+    script_txt.append('\n')
+
+    script_txt.append('\t# --- Clean Up Old Provisioning ---\n')
+    script_txt.append('\t# Remove demand against PMEM, so we can reconfigure\n')
+    script_txt.append('\n')
+    script_txt.append('\techo " --- Pre Boot Clean Up ---"\n')
+    script_txt.append('\tlogger Beginning Recovery of PMEM on socket %s\n' % (socket_id))
+    script_txt.append('\n')
+    script_txt.append('\tif [ ! `mountpoint -q %s` ]; then\n' % (mount_point))
+    script_txt.append('\t\t echo "Unmounting %s"\n' % (mount_point))
+    script_txt.append('\t\t logger unmounting %s\n' % (mount_point))
+    script_txt.append('\t\t umount %s\n' % (mount_point))
+    script_txt.append('\telse\n')
+    script_txt.append('\t\techo "%s is not mounted"\n' % (mount_point))
+    script_txt.append('\n')
+    script_txt.append('\tfi\n')
+    script_txt.append('\n')
+    script_txt.append('\t# Note: These two commands will fail if re-enumeration has happened\n')
+    script_txt.append('\tndctl disable-namespace %s > /dev/null 2>&1\n' % (namespace_name))
+    script_txt.append('\tndctl disable-region %s > /dev/null 2>&1\n' % (region_name))
+    script_txt.append('\n')
+
+    script_txt.append('\t# --- Erasing PMEM Devices used by this region ---\n')
+    script_txt.append('\t# Note: On completion, ipmctl will respond that all DIMMs have been cleared.\n')
+    script_txt.append('\t#       There is no cause for concern\n')
+    script_txt.append('\tlogger deleting PMEM configuration for socket %s for dimms %s\n' % (socket_id, dimms))
+    script_txt.append('\techo "deleting PMEM configuration for socket %s for dimms %s"\n' % (socket_id, dimms))
+    script_txt.append('\tipmctl delete -f -dimm -pcd %s\n' % (dimms))
+    script_txt.append('\n')
+
+    script_txt.append('\t# Create new PMEM Region for this socket\n')
+    script_txt.append('\tlogger creating new PMEM configuration for socket %s\n' % (socket_id))
+    script_txt.append('\techo "creating new PMEM configuration for socket %s"\n' % (socket_id))
+    script_txt.append('\tipmctl create -goal -socket %s\n' % (socket_id))
+    script_txt.append('\n')
+
+    script_txt.append('\t# Reboot at this point to create the pmem region\n')
+    script_txt.append('\t# unless there are more regions to be created now\n')
+    script_txt.append('\n')
+
+    # script_txt.append('\tREBOOT_NOW=0\n')
+    # script_txt.append('\n')
+    # script_txt.append('\twhile [ true ] ; do\n')
+    # script_txt.append('\t\t read -p "Do you wish to reboot now?" yn\n')
+    # script_txt.append('\t\t case $yn in\n')
+    # script_txt.append('\t\t\t [Yy]* ) echo "Rebooting Now"; REBOOT_NOW=1; break;;\n')
+    # script_txt.append('\t\t\t [Nn]* ) echo "Reboot Later";  break;;\n')
+    # script_txt.append('\t\t\t * ) echo "Please answer yes or no.";;\n')
+    # script_txt.append('\t\t esac\n')
+    # script_txt.append('\tdone\n')
+    # script_txt.append('\n')
+
+    script_txt.append('\t# Clear the Phase 1 flag, now that we are done w/ Phase 1\n')
+    script_txt.append('\t/usr/bin/rm -f $PHASE1\n')
+    script_txt.append('\n')
+    script_txt.append('\t# Set the Phase 2 flag, now that we are done w/ Phase 1\n')
+    script_txt.append('\ttouch $PHASE2\n')
+
+    # script_txt.append('\tif [ "$REBOOT_NOW" -eq 1] ; then\n')
+    # script_txt.append('\t\tshutdown -r now\n')
+    # script_txt.append('\tfi\n')
+
+    script_txt.append('\techo "Cleanup Complete. Run this script again after rebooting to resume recovery"\n')
+    script_txt.append('\techo "Exiting"\n')
+    script_txt.append('\texit 0\n')
+    script_txt.append('\n')
+
     script_txt.append('else\n')
-    script_txt.append('\techo "%s is not mounted"\n' % (mount_point))
+    script_txt.append('\techo "Skipping to PHASE 2"\n')
+    script_txt.append('fi #END PHASE1\n')
+
     script_txt.append('\n')
-    script_txt.append('fi\n')
-    script_txt.append('\n')
-    script_txt.append('# Note: These two commands will fail if re-enumeration has happened\n')
-    script_txt.append('ndctl disable-namespace %s > /dev/null 2&1\n' % (namespace_name))
-    script_txt.append('ndctl disable-region %s > /dev/null 2&1\n' % (region_name))
     script_txt.append('\n')
 
-    script_txt.append('# --- Erasing PMEM Devices used by this region ---\n')
-    script_txt.append('# Note: On completion, ipmctl will respond that all DIMMs have been cleared.\n')
-    script_txt.append('#       There is no cause for concern\n')
-    script_txt.append('logger deleting PMEM configuration for socket %s for dimms %s\n' % (socket_id, dimms))
-    script_txt.append('echo deleting PMEM configuration for socket %s for dimms %s\n' % (socket_id, dimms))
-    script_txt.append('ipmctl delete -f -dimm -pcd %s\n' % (dimms))
+    script_txt.append('if [ -f $PHASE2 ] ; then\n')
     script_txt.append('\n')
+    script_txt.append('\techo "Beginning Phase 2"\n')
 
-    script_txt.append('# Create new PMEM Region for this socket\n')
-    script_txt.append('logger creating new PMEM configuration for socket %s\n' % (socket_id))
-    script_txt.append('echo "creating new PMEM configuration for socket %s"\n' % (socket_id))
-    script_txt.append('ipmctl create -goal -socket %s\n' % (socket_id))
+    script_txt.append('\techo " --- Post Boot provisioning ---"\n')
     script_txt.append('\n')
+    script_txt.append('\t# namespace will contain 0 if there are no namespaces in this region.\n')
+    script_txt.append('\tnamespaces=`ndctl list -N -r %s | wc -l`\n' % (region_name))
+    script_txt.append('\tif [ "$namespaces" -ne 0 ] ; then\n')
+    script_txt.append('\t\t echo "Namespace Exists on region: %s"\n' % (region_name))
+    script_txt.append('\t\t echo "You Cannot Create a new namespace if there is no room on %s"\n' % (region_name))
+    script_txt.append('\t\t exit 1\n')
+    script_txt.append('\tfi\n')
 
-    script_txt.append('# Reboot at this point to create the pmem region\n')
-    script_txt.append('# unless there are more regions to be created now\n')
     script_txt.append('\n')
-
-    script_txt.append('while [ true ] ; do\n')
-    script_txt.append('\t read -p "Do you wish to reboot now?" yn\n')
-    script_txt.append('\t case $yn in\n')
-    script_txt.append('\t\t [Yy]* ) echo Rebooting Now; shutdown -r now; break;;\n')
-    script_txt.append('\t\t [Nn]* ) reboot later after all changes are made;;\n')
-    script_txt.append('\t\t * ) echo "Please answer yes or no.";;\n')
-    script_txt.append('\t esac\n')
-    script_txt.append('done\n')
-    script_txt.append('\n')
-
-    script_txt.append('echo " --- Post Boot provisioning ---"\n')
-    script_txt.append('\n')
-    script_txt.append('# no_namespace will contain 0, if there are no namespaces in this region.\n')
-    script_txt.append('namespaces_exist=`ndctl list -N -r %s | wc -l`\n' % (region_name))
-    script_txt.append('if [ "namespace_exist" -ne 0 ] ; then\n')
-    script_txt.append('\t echo "Namespace Exists on region: %s"\n' % (region_name))
-    script_txt.append('\t echo "You Cannot Create a new namespace if there is no room on %s"\n' % (region_name))
-    script_txt.append('\t exit 1\n')
-    script_txt.append('fi\n')
-
-    script_txt.append('echo "Creating namespace on region: %s"\n' % (region_name))
-    script_txt.append('ndctl create-namespace --mode fsdax --region %s\n' % (region_name))
+    script_txt.append('\techo "Creating namespace on region: %s"\n' % (region_name))
+    script_txt.append('\tndctl create-namespace --mode fsdax --region %s\n' % (region_name))
 
     #TODO: integrate dymamic fs_type into command below
-    script_txt.append('# --- Create PMFS on pmem device ---\n')
-    script_txt.append('echo "Creating filesystem on %s:%s->%s"\n' % (region_name, namespace_name, pmem_device_path))
-    script_txt.append('mkfs -t xfs -m reflink=0 -f %s\n' % (pmem_device_path))
-
-    script_txt.append('# --- Create PMFS Mount Point ---\n')
-    script_txt.append('echo "Checking mount point"\n')
-    script_txt.append('if [ ! -d %s ] ; then\n' % (mount_point))
-    script_txt.append('\t echo "creating %s"\n' % (mount_point))
-    script_txt.append('\t mkdir %s\n' % (mount_point))
-    script_txt.append('else \n')
-    script_txt.append('\t echo "Mount point exists!"\n')
-    script_txt.append('fi \n')
-
-    script_txt.append('echo --- Create updated fstab entry for %s--- \n' % (mount_point))
     script_txt.append('\n')
-    script_txt.append('echo --- Get the PMFS UUID ---\n')
-    script_txt.append('new_uuid=`blkid %s`\n' % (pmem_device_path))
-    script_txt.append('echo $new_uuid\n')
-    script_txt.append('echo --- extracting fstab entry for mount point %s ---\n'% (mount_point))
-    script_txt.append('\n')
-    script_txt.append('rest=`grep %s /etc/fstab | cut -f2-`\n' % (mount_point))
-    script_txt.append('echo --- merging new uuid $new_uuid with original $rest %s ---\n')
-    script_txt.append('new_entry=`echo $new_uuid $rest`\n')
-    script_txt.append('\n')
-    script_txt.append('# --- Use below line to update /etc/fstab.\n')
-    script_txt.append('echo Writing new fstab entry to /tmp/fstab_socket_%s\n' % (socket_id))
-    script_txt.append('echo $new_entry > /tmp/fstab_socket_%s\n' % (socket_id))
-    script_txt.append('# --- Use above line to update /etc/fstab.\n')
-
+    script_txt.append('\t# --- Create PMFS on pmem device ---\n')
+    script_txt.append('\techo "Creating filesystem on %s:%s->%s"\n' % (region_name, namespace_name, pmem_device_path))
+    script_txt.append('\tmkfs -t xfs -m reflink=0 -f %s\n' % (pmem_device_path))
 
     script_txt.append('\n')
+    script_txt.append('\t# --- Create PMFS Mount Point ---\n')
+    script_txt.append('\techo "Checking mount point"\n')
+    script_txt.append('\tif [ ! -d %s ] ; then\n' % (mount_point))
+    script_txt.append('\t\t echo "creating %s"\n' % (mount_point))
+    script_txt.append('\t\t mkdir %s\n' % (mount_point))
+    script_txt.append('\telse \n')
+    script_txt.append('\t\t echo "Mount point exists!"\n')
+    script_txt.append('\tfi \n')
 
-    #TODO: update this section so it creates properly formatted fstab entry
-    #
-    # script_txt.append('# --- Update /etc/fstab with new fs uuid --- \n')
-    # script_txt.append('# This sed script can help, or edit it yourself\n')
-    # script_txt.append('new_uuid=`blkid %s  | cut -d" " -f2`\n' % ( pmem_device_path))
-    # script_txt.append('\n')
+    script_txt.append('\techo "--- Create updated fstab entry for %s---" \n' % (mount_point))
+    script_txt.append('\n')
+    script_txt.append('\techo "--- Get the PMFS UUID ---"\n')
+    script_txt.append('\tnew_uuid=`blkid %s | cut -d" " -f2`\n' % (pmem_device_path))
+    script_txt.append('\techo "$new_uuid"\n')
+    script_txt.append('\n')
+    script_txt.append('\techo "--- extracting fstab entry for mount point %s ---"\n'% (mount_point))
+    script_txt.append('\trest=`grep %s /etc/fstab | cut -f2-`\n' % (mount_point))
+    script_txt.append('\techo "--- merging new uuid $new_uuid with original $rest ---"\n')
+    script_txt.append('\n')
+    script_txt.append('\tnew_entry=`echo $new_uuid $rest`\n')
+    script_txt.append('\n')
+    script_txt.append('\techo "Writing new fstab entry to /tmp/fstab_socket_%s"\n' % (socket_id))
+    script_txt.append('\techo "$new_entry" > /tmp/fstab_socket_%s\n' % (socket_id))
+    script_txt.append('\n')
+    script_txt.append('\techo "cat /tmp/fstab_socket_* to see all of the new fstab entries"\n')
 
-    # script_txt.append('# --- Example fstab entry ---\n')
-    # script_txt.append('echo \'%s >> /etc/fstab\'\n' % (fstab_entry))
-    # script_txt.append('\n')
+    script_txt.append('\t/usr/bin/rm $PHASE2\n')
+    script_txt.append('\n')
+    script_txt.append('\techo "Recovery Complete. Be sure to update /etc/fstab with contents from:"\n')
+    script_txt.append('\techo "/tmp/fstab_socket_*"\n')
+    script_txt.append('\ttouch $DONE\n')
+    script_txt.append('\n')
+    script_txt.append('fi # end PHASE2\n')
 
-    # script_txt.append("cat /etc/fstab | sed 's/%s/%s/' >> /tmp/new_fstab\n" % (old_uuid, 'new_uuid'))
-
-    # script_txt.append('\n')
-    # script_txt.append('\n')
-
+    script_txt.append('\n')
     script_txt.append('# --- End of Script ---\n')
 
     f.writelines(script_txt)

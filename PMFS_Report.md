@@ -6,3 +6,11 @@
 |   | [PMFS Health Report](Healthy_PMFS_Report.md)  | [Steve Scargall](https://stevescargall.com/)  | [PMEM Programming Book](https://pmem.io/books/) |
 
 # Persistent Memory Filesystem Report
+```
+Mount Point  Mounted NS Size   Health   Region     NS dev   NS Type  fs_type  PMEM Devices
+------------ ------- --------- -------- ---------- -------- -------- -------- --------------------------------------
+/pmemfs0     True    1488 GiB  ok       region0    pmem0    fsdaX    xfs      0x0001 0x0011 0x0021 0x0101 0x0111 0x0121
+/pmemfs1     True    1488 GiB  ok       region1    pmem1    fsdaX    xfs      0x1001 0x1011 0x1021 0x1101 0x1111 0x1121
+/pmemfs2     True    1488 GiB  ok       region2    pmem2    fsdaX    xfs      0x2001 0x2011 0x2021 0x2101 0x2111 0x2121
+/pmemfs3     True    1488 GiB  ok       region3    pmem3    fsdaX    xfs      0x3001 0x3011 0x3021 0x3101 0x3111 0x3121
+```

@@ -138,7 +138,6 @@ This new entry should be copied into the /etc/fstab to replace the existing entr
 Note that the only difference between the new and old entries are the UUID value.
 The rest of the entry are extracted from the current entry.
 
-```
 root@insp01:~# cat /tmp/fstab_socket_*
 UUID="015d5c1d-6c05-4c61-abdb-454180667e3a" /pmemfs1 xfs noatime,nodiratime,nodiscard,dax 0 0
 

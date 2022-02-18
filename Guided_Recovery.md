@@ -14,6 +14,12 @@ It is highly recommended to periodically regenerate the recovery scripts to capt
 or logical configurations.
 
 Recovery scripts are generated for each socket configured for App Direct with entries in teh /etc/fstab.
+*Example Scripts:*
+- Generated Recover Script:  [/tmp/recover_socket_0.sh](recover_socket_0.sh)
+- Generated Recover Script:  [/tmp/recover_socket_1.sh](recover_socket_1.sh)
+- Generated Recover Script:  [/tmp/recover_socket_2.sh](recover_socket_2.sh)
+- Generated Recover Script:  [/tmp/recover_socket_3.sh](recover_socket_3.sh)
+
 
 ## Example Test Run with script generation
 ```
@@ -55,8 +61,8 @@ Mount Point  Mounted NS Size   Health   Region     NS dev   NS Type  fs_type  PM
 /pmemfs3     True    1488 GiB  ok       region3    pmem3    fsdaX    xfs      0x3001 0x3011 0x3021 0x3101 0x3111 0x3121
 
 PMFS with OK status: /pmemfs0; /pmemfs1; /pmemfs2; /pmemfs3;
-Generated Recover Script:  [/tmp/recover_socket_0.sh](recover_socket_0.sh)
-Generated Recover Script:  [/tmp/recover_socket_1.sh](recover_socket_1.sh)
-Generated Recover Script:  [/tmp/recover_socket_2.sh](recover_socket_2.sh)
-Generated Recover Script:  [/tmp/recover_socket_3.sh](recover_socket_3.sh)
+Generated Recover Script:  /tmp/recover_socket_0.sh
+Generated Recover Script:  /tmp/recover_socket_1.sh
+Generated Recover Script:  /tmp/recover_socket_2.sh
+Generated Recover Script:  /tmp/recover_socket_3.sh
 ```

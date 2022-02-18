@@ -8,7 +8,9 @@
 
 # How It Works
 We first begin by dumping ndctl namespace, region, DIMM, and DIMM health statistics into a json file in /tmp where it is parsed and imported into a python dictionary named ndctl.
-Next, we dump socket, region, and dimm data using ipmctl into a series of XML files in /tmp, and imported int python dictionaries sockets, dimms, and regions respectively. Functions from the [ipmctl module](ipmctl.py
+Next, we dump socket, region, and dimm data using ipmctl into a series of XML files in /tmp, and imported int python dictionaries sockets, dimms, and regions respectively. Functions from the [ipmctl module](ipmctl.py)
+
+WIP
 
 
 # Feature List

@@ -415,6 +415,14 @@ def print_timers(t = timers):
             list_dimms()    0.0004 941300.3744  941300.3748
     '''
 
+    name = __name__ + ':print_timers()'
+
+    tic = time.perf_counter()
+    toc = time.perf_counter()
+    delta_t = toc - tic
+    td = {'name': name, "elapsed": delta_t, 'tic': tic, 'toc': toc}
+    timers.append(td)
+
     print('------------Start Recovery function timers---------------')
     print('%30s %8s %11s %11s' % ('Function', 'Elapsed', 'Start', 'End') )
     print('%30s %8s %11s %11s' % ('------------------------------', '---------', '-----------', '------------') )
